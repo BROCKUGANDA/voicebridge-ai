@@ -145,6 +145,10 @@ export function useVoiceRecognition(
       setCurrentTranscript(transcript)
 
       if (isFinal) {
+        // Stop monitoring audio visualizer immediately on final result
+        stopAudioMonitoring()
+        // Clear the recognition ref so onend won't fight with handleVoiceResult
+        recognitionRef.current = null
         processResult(transcript)
       }
     }
@@ -156,13 +160,22 @@ export function useVoiceRecognition(
         setStoreError(errEvent.error)
         soundEngine.play('error-notification', soundVolume)
       }
-      setVoiceState('idle')
+      // Only reset to idle if nothing else took over the state
+      const current = useVoiceStore.getState().voiceState
+      if (current === 'listening') {
+        setVoiceState('idle')
+      }
       stopAudioMonitoring()
     }
 
     recognition.onend = () => {
-      setVoiceState('idle')
       stopAudioMonitoring()
+      // Only reset to idle if still in listening state.
+      // If handleVoiceResult already moved to processing/speaking, don't interfere.
+      const current = useVoiceStore.getState().voiceState
+      if (current === 'listening') {
+        setVoiceState('idle')
+      }
     }
 
     recognitionRef.current = recognition
@@ -174,11 +187,16 @@ export function useVoiceRecognition(
       recognitionRef.current.stop()
       recognitionRef.current = null
     }
+    // Only set idle if currently listening (not processing/speaking)
+    const current = useVoiceStore.getState().voiceState
+    if (current === 'listening') {
+      setVoiceState('idle')
+    }
     soundEngine.play('mic-off', soundVolume)
     announceToScreenReader('Microphone deactivated.', 'polite')
     if (hapticOn) hapticFeedback(20)
     stopAudioMonitoring()
-  }, [soundVolume, hapticOn, stopAudioMonitoring])
+  }, [soundVolume, hapticOn, stopAudioMonitoring, setVoiceState])
 
   const toggleListening = useCallback(() => {
     const { voiceState } = useVoiceStore.getState()

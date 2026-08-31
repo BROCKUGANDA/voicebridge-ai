@@ -2,15 +2,16 @@
 
 import { cn } from '@/lib/utils'
 import { useVoiceStore, type VoiceState } from '@/stores/voice-store'
-import { useVoiceRecognition } from '@/hooks/use-voice-recognition'
-import { useSoundFeedback } from '@/hooks/use-sound-feedback'
 import { VoiceWaveform } from './VoiceWaveform'
 import { Mic, MicOff, Loader2, AlertCircle } from 'lucide-react'
 import { announceToScreenReader } from '@/lib/accessibility-utils'
 import { useEffect } from 'react'
 
 interface VoiceInputProps {
-  onResult?: (text: string, intent: ReturnType<typeof import('@/lib/voice-processor').parseIntent>) => void
+  onToggle: () => void
+  isListening: boolean
+  isSupported: boolean
+  recognitionError: string | null
 }
 
 const STATE_CONFIG: Record<VoiceState, { label: string; ariaLabel: string; color: string }> = {
@@ -41,12 +42,10 @@ const STATE_CONFIG: Record<VoiceState, { label: string; ariaLabel: string; color
   },
 }
 
-export function VoiceInput({ onResult }: VoiceInputProps) {
+export function VoiceInput({ onToggle, isListening, isSupported, recognitionError }: VoiceInputProps) {
   const voiceState = useVoiceStore((s) => s.voiceState)
   const error = useVoiceStore((s) => s.error)
   const transcript = useVoiceStore((s) => s.currentTranscript)
-  const { toggleListening, isSupported, error: recognitionError } = useVoiceRecognition(onResult)
-  const { playActionConfirmation, playError } = useSoundFeedback()
 
   const config = STATE_CONFIG[voiceState]
 
@@ -54,11 +53,6 @@ export function VoiceInput({ onResult }: VoiceInputProps) {
   useEffect(() => {
     announceToScreenReader(config.ariaLabel)
   }, [voiceState])
-
-  // Play sounds on state changes
-  useEffect(() => {
-    if (voiceState === 'error') playError()
-  }, [voiceState, playError])
 
   const handleClick = () => {
     if (voiceState === 'speaking') {
@@ -69,8 +63,7 @@ export function VoiceInput({ onResult }: VoiceInputProps) {
     if (voiceState === 'error') {
       useVoiceStore.getState().setError(null)
     }
-    toggleListening()
-    playActionConfirmation()
+    onToggle()
   }
 
   return (
