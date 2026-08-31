@@ -26,7 +26,10 @@ interface SpeechRecognitionEvent extends Event {
 export function useVoiceRecognition(
   onResult?: (text: string, intent: ReturnType<typeof parseIntent>) => void
 ): UseVoiceRecognitionReturn {
-  const [isSupported, setIsSupported] = useState(false)
+  const [isSupported] = useState(() => {
+    if (typeof window === 'undefined') return false
+    return 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window
+  })
   const [error, setError] = useState<string | null>(null)
   const recognitionRef = useRef<SpeechRecognition | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
@@ -207,12 +210,7 @@ export function useVoiceRecognition(
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [keyboardShortcuts, toggleListening])
 
-  // Check support on mount
-  useEffect(() => {
-    const supported =
-      'SpeechRecognition' in window || 'webkitSpeechRecognition' in window
-    setIsSupported(supported)
-  }, [])
+  // Check support - handled in useState initializer above
 
   return {
     isListening: useVoiceStore((s) => s.voiceState === 'listening'),

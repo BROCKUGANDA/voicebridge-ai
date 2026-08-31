@@ -165,7 +165,7 @@ export function QuickActions() {
                 'disabled:opacity-50 disabled:cursor-not-allowed',
                 action.color
               )}
-              aria-label={`${action.label}: ${action.description}`}`}
+              aria-label={`${action.label}: ${action.description}`}
               disabled={useVoiceStore.getState().voiceState === 'processing'}
             >
               <Icon className="w-5 h-5" />

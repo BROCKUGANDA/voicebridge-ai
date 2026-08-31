@@ -19,8 +19,7 @@ export function announceToScreenReader(message: string, priority: 'polite' | 'as
 
   // Clear and re-set to force re-announcement
   region.setAttribute('aria-live', 'off')
-  // eslint-disable-next-line no-void
-  void region.offsetHeight
+  region.style.display = 'none' // trigger reflow
   region.setAttribute('aria-live', priority)
   region.textContent = message
 }

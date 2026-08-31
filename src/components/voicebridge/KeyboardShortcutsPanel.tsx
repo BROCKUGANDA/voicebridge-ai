@@ -1,15 +1,10 @@
 'client'
 
 import { getKeyboardShortcuts } from '@/lib/accessibility-utils'
-import { useEffect, useState } from 'react'
+
+const SHORTCUTS = getKeyboardShortcuts()
 
 export function KeyboardShortcutsPanel() {
-  const [shortcuts, setShortcuts] = useState(getKeyboardShortcuts())
-
-  useEffect(() => {
-    setShortcuts(getKeyboardShortcuts())
-  }, [])
-
   return (
     <div className="flex flex-col h-full">
       <div className="px-4 py-3 border-b border-white/5">
@@ -21,7 +16,7 @@ export function KeyboardShortcutsPanel() {
 
       <div className="flex-1 overflow-y-auto vb-scrollbar p-4">
         <div className="space-y-2">
-          {shortcuts.map(({ keys, description }) => (
+          {SHORTCUTS.map(({ keys, description }) => (
             <div
               key={keys}
               className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-white/3 transition-colors"

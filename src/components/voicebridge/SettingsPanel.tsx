@@ -19,12 +19,12 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([])
   const [tab, setTab] = useState(store.activeSettingsTab)
 
+  // Sync voices from the speech synthesis API on change events
   useEffect(() => {
-    const voices = window.speechSynthesis.getVoices()
-    setAvailableVoices(voices.filter((v) => v.lang.startsWith('en')))
     const handleVoicesChanged = () => {
       setAvailableVoices(window.speechSynthesis.getVoices().filter((v) => v.lang.startsWith('en')))
     }
+    handleVoicesChanged()
     window.speechSynthesis.addEventListener('voiceschanged', handleVoicesChanged)
     return () => window.speechSynthesis.removeEventListener('voiceschanged', handleVoicesChanged)
   }, [])
