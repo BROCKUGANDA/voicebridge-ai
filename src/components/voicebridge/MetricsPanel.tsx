@@ -1,4 +1,4 @@
-'client'
+'use client'
 
 import { useConversationStore } from '@/stores/conversation-store'
 import { cn } from '@/lib/utils'

@@ -1,6 +1,8 @@
 // Web Audio API Sound Design System for VoiceBridge AI
 // Generates all UI sounds programmatically (no external audio files needed)
 
+import { useVoiceStore } from '@/stores/voice-store'
+
 type SoundType =
   | 'action-confirmation'
   | 'error-notification'
@@ -63,6 +65,13 @@ function playChord(
 export const soundEngine = {
   play(soundType: SoundType, volume: number = 0.3): void {
     try {
+      // Mute guard
+      try {
+        if (useVoiceStore.getState().isMuted) return
+      } catch {
+        // store not initialized yet, continue
+      }
+
       const ctx = getAudioContext()
       if (ctx.state === 'suspended') {
         ctx.resume()

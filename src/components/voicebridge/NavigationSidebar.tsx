@@ -1,4 +1,4 @@
-'client'
+'use client'
 
 import { cn } from '@/lib/utils'
 import { useVoiceStore } from '@/stores/voice-store'
@@ -12,7 +12,6 @@ import {
   Volume2,
   Accessibility,
 } from 'lucide-react'
-import { soundEngine } from '@/lib/sound-engine'
 import { useSoundFeedback } from '@/hooks/use-sound-feedback'
 
 interface NavItem {
@@ -46,7 +45,6 @@ export function NavigationSidebar({ activePanel, onPanelChange }: NavigationSide
   const handleNav = (item: NavItem) => {
     onPanelChange(item.id)
     playNavigation()
-    soundEngine.play('navigation', 0.2)
   }
 
   return (
