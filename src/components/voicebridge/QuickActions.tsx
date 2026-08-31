@@ -1,4 +1,4 @@
-'client'
+'use client'
 
 import { cn } from '@/lib/utils'
 import { useVoiceStore } from '@/stores/voice-store'
@@ -6,13 +6,11 @@ import { useSpeechSynthesis } from '@/hooks/use-speech-synthesis'
 import { useScreenCapture } from '@/hooks/use-screen-capture'
 import { useSoundFeedback } from '@/hooks/use-sound-feedback'
 import { useConversationStore } from '@/stores/conversation-store'
-import { soundEngine } from '@/lib/sound-engine'
 import { generateId } from '@/lib/voice-processor'
 import {
   Eye,
   BookOpen,
   Search,
-  Navigation,
   HelpCircle,
   ArrowLeft,
   ArrowRight,
@@ -31,14 +29,11 @@ interface QuickAction {
 export function QuickActions() {
   const { speak } = useSpeechSynthesis()
   const { captureAndAnalyze } = useScreenCapture()
-  const { playCompletion, playActionConfirmation, playError } = useSoundFeedback()
+  const { playCompletion, playError } = useSoundFeedback()
   const { addMessage, setVoiceState } = useVoiceStore()
   const { recordCommand, addToContext } = useConversationStore()
 
-  const executeAction = (label: string, text: string, action: () => void) => {
-    const startTime = Date.now()
-    setVoiceState('processing')
-
+  const executeAction = (label: string, responseText: string) => {
     addMessage({
       id: generateId(),
       role: 'user',
@@ -46,19 +41,21 @@ export function QuickActions() {
       timestamp: Date.now(),
     })
 
+    setVoiceState('processing')
+
     try {
-      action()
-      const responseTime = Date.now() - startTime
+      // speak() handles the speaking → idle transition via its onend handler
+      speak(responseText)
       recordCommand(label, true)
-      addToContext(text)
+      addToContext(responseText)
       playCompletion()
+      // Don't set idle here — speak's onend does that
     } catch {
       recordCommand(label, false)
       playError()
+      setVoiceState('idle')
       speak('Sorry, something went wrong. Please try again.')
     }
-
-    setVoiceState('idle')
   }
 
   const actions: QuickAction[] = [
@@ -69,9 +66,12 @@ export function QuickActions() {
       icon: Eye,
       color: 'text-[#00F0FF] hover:bg-[#00F0FF]/10 border-[#00F0FF]/20',
       action: () => {
-        const analysis = captureAndAnalyze()
-        speak(analysis.description)
-        executeAction('Describe Page', analysis.description, () => {})
+        try {
+          const analysis = captureAndAnalyze()
+          executeAction('Describe Page', analysis.description)
+        } catch {
+          executeAction('Describe Page', 'Unable to analyze the page.')
+        }
       },
     },
     {
@@ -84,8 +84,7 @@ export function QuickActions() {
         const body = document.body
         const main = body.querySelector('main, [role="main"]') || body
         const text = main.innerText?.substring(0, 2000) || 'No text content found on this page.'
-        speak(text)
-        executeAction('Read Content', text, () => {})
+        executeAction('Read Content', text)
       },
     },
     {
@@ -95,8 +94,7 @@ export function QuickActions() {
       icon: Search,
       color: 'text-[#FFB627] hover:bg-[#FFB627]/10 border-[#FFB627]/20',
       action: () => {
-        speak('What element would you like me to find? You can say the label or type of element.')
-        executeAction('Find Element', 'User initiated element search', () => {})
+        executeAction('Find Element', 'What element would you like me to find? You can say the label or type of element.')
       },
     },
     {
@@ -107,8 +105,7 @@ export function QuickActions() {
       color: 'text-white/70 hover:bg-white/5 border-white/10',
       action: () => {
         window.history.back()
-        speak('Going back.')
-        executeAction('Go Back', 'Navigated back', () => {})
+        executeAction('Go Back', 'Going back.')
       },
     },
     {
@@ -119,8 +116,7 @@ export function QuickActions() {
       color: 'text-white/70 hover:bg-white/5 border-white/10',
       action: () => {
         window.history.forward()
-        speak('Going forward.')
-        executeAction('Go Forward', 'Navigated forward', () => {})
+        executeAction('Go Forward', 'Going forward.')
       },
     },
     {
@@ -130,9 +126,8 @@ export function QuickActions() {
       icon: RefreshCw,
       color: 'text-white/70 hover:bg-white/5 border-white/10',
       action: () => {
-        window.location.reload()
-        speak('Refreshing the page.')
-        executeAction('Refresh', 'Page refreshed', () => {})
+        executeAction('Refresh', 'Refreshing the page.')
+        setTimeout(() => window.location.reload(), 300)
       },
     },
     {
@@ -143,8 +138,7 @@ export function QuickActions() {
       color: 'text-[#51CF66] hover:bg-[#51CF66]/10 border-[#51CF66]/20',
       action: () => {
         const helpText = 'VoiceBridge AI understands these commands: Describe the page, read content, find elements, navigate, search, fill forms, and adjust settings. You can also ask general questions. Press Space to toggle the microphone.'
-        speak(helpText)
-        executeAction('Help', 'User requested help', () => {})
+        executeAction('Help', helpText)
       },
     },
   ]
@@ -166,7 +160,7 @@ export function QuickActions() {
                 action.color
               )}
               aria-label={`${action.label}: ${action.description}`}
-              disabled={useVoiceStore.getState().voiceState === 'processing'}
+              disabled={useVoiceStore.getState().voiceState === 'processing' || useVoiceStore.getState().voiceState === 'speaking'}
             >
               <Icon className="w-5 h-5" />
               <span className="text-[10px] text-center leading-tight">{action.label}</span>

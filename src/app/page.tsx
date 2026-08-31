@@ -43,8 +43,8 @@ export default function VoiceBridgeDashboard() {
     preferredNavigationStyle: 'sequential',
     sessionFrequency: 0,
   })
-  const handleVoiceResultRef = useRef<((text: string, intent: VoiceIntent) => Promise<void>) | undefined>(undefined)
 
+  // ── Store hooks ──
   const { isSettingsOpen, setSettingsOpen, responseVerbosity, soundVolume } = useSettingsStore()
   const { setVoiceState, setWebSocketConnected, setProcessingStartTime } = useVoiceStore()
   const { startSession, recordCommand, addToContext } = useConversationStore()
@@ -52,7 +52,9 @@ export default function VoiceBridgeDashboard() {
   const { speak, stop: stopSpeaking } = useSpeechSynthesis()
   const { playCompletion, playError } = useSoundFeedback()
 
-  // Core intelligence pipeline - defined before hook usage
+  // ── Core intelligence pipeline (stable ref so the hook sees latest version) ──
+  const handleVoiceResultRef = useRef<((text: string, intent: VoiceIntent) => Promise<void>) | undefined>(undefined)
+
   const handleVoiceResult = useCallback(
     async (text: string, intent: VoiceIntent) => {
       const startTime = Date.now()
@@ -101,6 +103,8 @@ export default function VoiceBridgeDashboard() {
         convContextRef.current = updateContext(convContextRef.current, intent.intent, text, true)
         addToContext(text)
 
+        // speak() manages state transitions: processing → speaking (onstart) → idle (onend)
+        // Do NOT set 'idle' here — that would kill the speaking state prematurely.
         speak(responseText)
         recordCommand(text, true)
         playCompletion()
@@ -135,18 +139,24 @@ export default function VoiceBridgeDashboard() {
           body: JSON.stringify({ userId: 'user-1', sessionId: useConversationStore.getState().sessionId, command: text, response: errorMsg, success: false }),
         }).catch(() => {})
       }
-      setVoiceState('idle')
+      // State is managed by speak()'s utterance.onend → idle.
+      // Only set idle if we never called speak (e.g. empty response)
+      const currentState = useVoiceStore.getState().voiceState
+      if (currentState === 'processing') {
+        setVoiceState('idle')
+      }
     },
     [responseVerbosity, setVoiceState, setProcessingStartTime, captureAndAnalyze, describeElementByQuery, speak, recordCommand, playCompletion, playError, addToContext]
   )
 
-  // Keep ref updated
+  // Keep ref updated so the voice hook always calls the latest closure
   useEffect(() => { handleVoiceResultRef.current = handleVoiceResult }, [handleVoiceResult])
 
-  // Voice recognition hook
-  useVoiceRecognition(handleVoiceResult)
+  // ── Voice recognition: SINGLE instance for the entire app ──
+  const voiceRec = useVoiceRecognition(handleVoiceResult)
+  const { toggleListening: toggleMic, isListening, isSupported, error: recError } = voiceRec
 
-  // WebSocket connection
+  // ── WebSocket connection ──
   useEffect(() => {
     const socket = socketIOClient('/?XTransformPort=3004', {
       transports: ['websocket', 'polling'],
@@ -162,7 +172,7 @@ export default function VoiceBridgeDashboard() {
     return () => { socket.disconnect() }
   }, [setWebSocketConnected, startSession])
 
-  // Start session
+  // ── Start session ──
   useEffect(() => {
     fetch('/api/session', {
       method: 'POST',
@@ -171,7 +181,7 @@ export default function VoiceBridgeDashboard() {
     }).then(r => r.json()).then(({ session }) => startSession(session.id)).catch(console.error)
   }, [startSession])
 
-  // Session duration timer
+  // ── Session duration timer ──
   useEffect(() => {
     const interval = setInterval(() => {
       const { metrics, sessionStartTime } = useConversationStore.getState()
@@ -180,7 +190,7 @@ export default function VoiceBridgeDashboard() {
     return () => clearInterval(interval)
   }, [])
 
-  // Save metrics periodically
+  // ── Save metrics periodically ──
   useEffect(() => {
     const interval = setInterval(() => {
       const { metrics, sessionId } = useConversationStore.getState()
@@ -191,6 +201,7 @@ export default function VoiceBridgeDashboard() {
     return () => clearInterval(interval)
   }, [])
 
+  // ── Quick describe page (keyboard shortcut) ──
   const handleQuickDescribePage = useCallback(() => {
     setVoiceState('processing')
     try {
@@ -199,10 +210,9 @@ export default function VoiceBridgeDashboard() {
       recordCommand('describe-page (keyboard)', true)
       playCompletion()
     } catch { speak('Unable to analyze the page.'); playError() }
-    setVoiceState('idle')
   }, [setVoiceState, captureAndAnalyze, speak, recordCommand, playCompletion, playError])
 
-  // Global keyboard shortcuts
+  // ── Global keyboard shortcuts ──
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement
@@ -258,7 +268,7 @@ export default function VoiceBridgeDashboard() {
                 Tap the microphone or press Space to start speaking. I will help you navigate and understand this page.
               </p>
             </div>
-            <VoiceInput onResult={handleVoiceResult} />
+            <VoiceInput onToggle={toggleMic} isListening={isListening} isSupported={isSupported} recognitionError={recError} />
             <div className="w-full max-w-lg"><QuickActions /></div>
           </div>
 
