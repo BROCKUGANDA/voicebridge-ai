@@ -1,0 +1,145 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String
+  email     String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  preferences   UserPreferences?
+  conversations Conversation[]
+  sessions      VoiceSession[]
+  interactions  InteractionHistory[]
+}
+
+model UserPreferences {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  voiceSpeed       Float   @default(1.0)
+  voicePitch       Float   @default(1.0)
+  voiceVolume      Float   @default(0.8)
+  selectedVoice    String  @default("default")
+  responseVerbosity String  @default("balanced")
+  soundTheme       String  @default("minimal")
+  soundVolume      Float   @default(0.5)
+  hapticFeedback   Boolean @default(true)
+  autoDescribe     Boolean @default(true)
+  fontSize         String  @default("medium")
+  highContrast     Boolean @default(true)
+  reducedMotion    Boolean @default(false)
+  keyboardShortcuts Boolean @default(true)
+  spatialAudio     Boolean @default(false)
+  pronunciationOverrides String @default("{}")
+  customCommands       String @default("{}")
+}
+
+model Conversation {
+  id        String   @id @default(cuid())
+  userId    String
+  sessionId String?
+  title     String   @default("New Conversation")
+  context   String   @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session     VoiceSession?     @relation(fields: [sessionId], references: [id])
+  messages    ConversationMessage[]
+
+  @@index([userId])
+  @@index([sessionId])
+}
+
+model ConversationMessage {
+  id           String   @id @default(cuid())
+  conversationId String
+  role         String
+  content      String
+  confidence   Float?
+  metadata     String   @default("{}")
+  createdAt    DateTime @default(now())
+
+  conversation Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+
+  @@index([conversationId])
+}
+
+model VoiceSession {
+  id              String   @id @default(cuid())
+  userId          String
+  status          String   @default("active")
+  duration        Int      @default(0)
+  commandCount    Int      @default(0)
+  errorCount      Int      @default(0)
+  successCount    Int      @default(0)
+  startedAt       DateTime @default(now())
+  endedAt         DateTime?
+
+  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  conversations Conversation[]
+
+  @@index([userId])
+  @@index([status])
+}
+
+model InteractionHistory {
+  id              String   @id @default(cuid())
+  userId          String
+  sessionId       String?
+  type            String
+  command         String
+  response        String
+  success         Boolean  @default(true)
+  responseTimeMs  Int?
+  metadata        String   @default("{}")
+  createdAt       DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([type])
+  @@index([createdAt])
+}
+
+model VisualAnalysis {
+  id            String   @id @default(cuid())
+  userId        String?
+  sessionId     String?
+  elementType   String
+  description   String
+  confidence    Float
+  boundingBox   String   @default("{}")
+ accessibilityAttributes String @default("{}")
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+  @@index([sessionId])
+}
+
+model AccessibilityMetric {
+  id              String   @id @default(cuid())
+  sessionId       String?
+  taskCompletionRate  Float?
+  avgCommandsPerTask  Float?
+  errorRate       Float?
+  userSatisfaction Float?
+  independenceScore Float?
+  cognitiveLoadScore Float?
+  recordedAt      DateTime @default(now())
+
+  @@index([sessionId])
+  @@index([recordedAt])
+}
