@@ -44,6 +44,9 @@ export function useSpeechSynthesis(): UseSpeechSynthesisReturn {
     (text: string) => {
       if (!text.trim()) return
 
+      // Mute guard
+      if (useVoiceStore.getState().isMuted) return
+
       // Cancel any current speech
       window.speechSynthesis.cancel()
 

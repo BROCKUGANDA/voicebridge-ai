@@ -1,4 +1,4 @@
-'client'
+'use client'
 
 import { useState, useEffect, useCallback } from 'react'
 import { useSettingsStore, type ResponseVerbosity, type SoundTheme, type FontSize } from '@/stores/settings-store'
@@ -11,13 +11,16 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { useSoundFeedback } from '@/hooks/use-sound-feedback'
+import { soundEngine } from '@/lib/sound-engine'
 import { X, RotateCcw, Volume2, Eye, Keyboard, Sliders } from 'lucide-react'
 
-export function SettingsPanel({ onClose }: { onClose: () => void }) {
+type SoundType = 'action-confirmation' | 'error-notification' | 'progress-indicator' | 'completion' | 'attention-required' | 'navigation' | 'state-change' | 'mic-on' | 'mic-off' | 'message-received'
+
+export function SettingsPanel({ onClose, initialTab }: { onClose: () => void; initialTab?: string }) {
   const store = useSettingsStore()
   const { playActionConfirmation, playCompletion, playAttention } = useSoundFeedback()
   const [availableVoices, setAvailableVoices] = useState<SpeechSynthesisVoice[]>([])
-  const [tab, setTab] = useState(store.activeSettingsTab)
+  const [tab, setTab] = useState(initialTab || store.activeSettingsTab)
 
   // Sync voices from the speech synthesis API on change events
   useEffect(() => {
@@ -254,17 +257,21 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
                 <Label className="text-xs text-[#6C757D]">Preview Sounds</Label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
-                    { label: 'Action', type: 'action-confirmation' },
-                    { label: 'Error', type: 'error-notification' },
-                    { label: 'Complete', type: 'completion' },
-                    { label: 'Attention', type: 'attention-required' },
+                    { label: 'Action', type: 'action-confirmation' as SoundType },
+                    { label: 'Error', type: 'error-notification' as SoundType },
+                    { label: 'Complete', type: 'completion' as SoundType },
+                    { label: 'Attention', type: 'attention-required' as SoundType },
+                    { label: 'Navigate', type: 'navigation' as SoundType },
+                    { label: 'Mic On', type: 'mic-on' as SoundType },
+                    { label: 'Mic Off', type: 'mic-off' as SoundType },
+                    { label: 'Message', type: 'message-received' as SoundType },
                   ].map(({ label, type }) => (
                     <Button
                       key={type}
                       variant="outline"
                       size="sm"
                       className="text-xs border-white/10 text-white/70"
-                      onClick={() => playActionConfirmation()}
+                      onClick={() => soundEngine.play(type, store.soundVolume)}
                     >
                       {label}
                     </Button>

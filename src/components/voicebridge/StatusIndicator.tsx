@@ -1,4 +1,4 @@
-'client'
+'use client'
 
 import { cn } from '@/lib/utils'
 import type { VoiceState } from '@/stores/voice-store'

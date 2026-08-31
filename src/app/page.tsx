@@ -24,13 +24,21 @@ import { SettingsPanel } from '@/components/voicebridge/SettingsPanel'
 import { MetricsPanel } from '@/components/voicebridge/MetricsPanel'
 import { QuickActions } from '@/components/voicebridge/QuickActions'
 import { KeyboardShortcutsPanel } from '@/components/voicebridge/KeyboardShortcutsPanel'
+import { HomePanel } from '@/components/voicebridge/HomePanel'
+import { SoundPanel } from '@/components/voicebridge/SoundPanel'
+import { AccessibilityPanel } from '@/components/voicebridge/AccessibilityPanel'
+import { ErrorBoundary } from '@/components/voicebridge/ErrorBoundary'
 import { Button } from '@/components/ui/button'
 import { Sparkles, Keyboard, Volume2 } from 'lucide-react'
 
 type VoiceIntent = ReturnType<typeof parseIntent>
 
+// Navigation panel IDs
+const NAV_PANELS = ['home', 'conversation', 'visual', 'metrics', 'sound', 'accessibility', 'keyboard', 'settings'] as const
+type NavPanelId = (typeof NAV_PANELS)[number]
+
 export default function VoiceBridgeDashboard() {
-  const [activePanel, setActivePanel] = useState('home')
+  const [activePanel, setActivePanel] = useState<NavPanelId>('home')
   const [onboarding, setOnboarding] = useState(true)
   const socketRef = useRef<Socket | null>(null)
   const convContextRef = useRef(createContext())
@@ -44,7 +52,7 @@ export default function VoiceBridgeDashboard() {
     sessionFrequency: 0,
   })
 
-  // ── Store hooks ──
+  // Store hooks
   const { isSettingsOpen, setSettingsOpen, responseVerbosity, soundVolume } = useSettingsStore()
   const { setVoiceState, setWebSocketConnected, setProcessingStartTime } = useVoiceStore()
   const { startSession, recordCommand, addToContext } = useConversationStore()
@@ -52,7 +60,7 @@ export default function VoiceBridgeDashboard() {
   const { speak, stop: stopSpeaking } = useSpeechSynthesis()
   const { playCompletion, playError } = useSoundFeedback()
 
-  // ── Core intelligence pipeline (stable ref so the hook sees latest version) ──
+  // Core intelligence pipeline
   const handleVoiceResultRef = useRef<((text: string, intent: VoiceIntent) => Promise<void>) | undefined>(undefined)
 
   const handleVoiceResult = useCallback(
@@ -103,8 +111,6 @@ export default function VoiceBridgeDashboard() {
         convContextRef.current = updateContext(convContextRef.current, intent.intent, text, true)
         addToContext(text)
 
-        // speak() manages state transitions: processing → speaking (onstart) → idle (onend)
-        // Do NOT set 'idle' here — that would kill the speaking state prematurely.
         speak(responseText)
         recordCommand(text, true)
         playCompletion()
@@ -139,8 +145,6 @@ export default function VoiceBridgeDashboard() {
           body: JSON.stringify({ userId: 'user-1', sessionId: useConversationStore.getState().sessionId, command: text, response: errorMsg, success: false }),
         }).catch(() => {})
       }
-      // State is managed by speak()'s utterance.onend → idle.
-      // Only set idle if we never called speak (e.g. empty response)
       const currentState = useVoiceStore.getState().voiceState
       if (currentState === 'processing') {
         setVoiceState('idle')
@@ -149,14 +153,35 @@ export default function VoiceBridgeDashboard() {
     [responseVerbosity, setVoiceState, setProcessingStartTime, captureAndAnalyze, describeElementByQuery, speak, recordCommand, playCompletion, playError, addToContext]
   )
 
-  // Keep ref updated so the voice hook always calls the latest closure
   useEffect(() => { handleVoiceResultRef.current = handleVoiceResult }, [handleVoiceResult])
 
-  // ── Voice recognition: SINGLE instance for the entire app ──
+  // Voice recognition: SINGLE instance
   const voiceRec = useVoiceRecognition(handleVoiceResult)
   const { toggleListening: toggleMic, isListening, isSupported, error: recError } = voiceRec
 
-  // ── WebSocket connection ──
+  // Handle nav panel changes
+  const handlePanelChange = useCallback((panel: string) => {
+    const id = panel as NavPanelId
+    setActivePanel(id)
+    // If 'settings' nav item clicked, also open the drawer
+    if (id === 'settings') {
+      setSettingsOpen(true)
+    }
+  }, [setSettingsOpen])
+
+  // Header callbacks
+  const handleOpenHelp = useCallback(() => {
+    setActivePanel('keyboard')
+  }, [])
+
+  const handleReconnect = useCallback(() => {
+    if (socketRef.current) {
+      socketRef.current.disconnect()
+      socketRef.current.connect()
+    }
+  }, [])
+
+  // WebSocket connection
   useEffect(() => {
     const socket = socketIOClient('/?XTransformPort=3004', {
       transports: ['websocket', 'polling'],
@@ -172,7 +197,7 @@ export default function VoiceBridgeDashboard() {
     return () => { socket.disconnect() }
   }, [setWebSocketConnected, startSession])
 
-  // ── Start session ──
+  // Start session
   useEffect(() => {
     fetch('/api/session', {
       method: 'POST',
@@ -181,7 +206,7 @@ export default function VoiceBridgeDashboard() {
     }).then(r => r.json()).then(({ session }) => startSession(session.id)).catch(console.error)
   }, [startSession])
 
-  // ── Session duration timer ──
+  // Session duration timer
   useEffect(() => {
     const interval = setInterval(() => {
       const { metrics, sessionStartTime } = useConversationStore.getState()
@@ -190,7 +215,7 @@ export default function VoiceBridgeDashboard() {
     return () => clearInterval(interval)
   }, [])
 
-  // ── Save metrics periodically ──
+  // Save metrics periodically
   useEffect(() => {
     const interval = setInterval(() => {
       const { metrics, sessionId } = useConversationStore.getState()
@@ -201,7 +226,7 @@ export default function VoiceBridgeDashboard() {
     return () => clearInterval(interval)
   }, [])
 
-  // ── Quick describe page (keyboard shortcut) ──
+  // Quick describe page
   const handleQuickDescribePage = useCallback(() => {
     setVoiceState('processing')
     try {
@@ -212,11 +237,23 @@ export default function VoiceBridgeDashboard() {
     } catch { speak('Unable to analyze the page.'); playError() }
   }, [setVoiceState, captureAndAnalyze, speak, recordCommand, playCompletion, playError])
 
-  // ── Global keyboard shortcuts ──
+  // Global keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       const target = e.target as HTMLElement
       if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable) return
+
+      // Alt+1-7 for nav panels
+      if (e.altKey && !e.ctrlKey && !e.metaKey) {
+        const num = parseInt(e.key)
+        if (num >= 1 && num <= 7) {
+          e.preventDefault()
+          setActivePanel(NAV_PANELS[num - 1])
+          soundEngine.play('navigation', 0.2)
+          return
+        }
+      }
+
       if (e.ctrlKey && e.key === '/') { e.preventDefault(); setActivePanel('keyboard') }
       if (e.ctrlKey && e.key === ',') { e.preventDefault(); setSettingsOpen(true) }
       if (e.ctrlKey && e.key === 'd') { e.preventDefault(); handleQuickDescribePage() }
@@ -235,71 +272,121 @@ export default function VoiceBridgeDashboard() {
     announceToScreenReader('Welcome to VoiceBridge AI. Press Space or tap the microphone button to start.')
   }
 
+  // Render the right sidebar panel based on active nav item
   const renderRightPanel = () => {
     switch (activePanel) {
-      case 'visual': return <VisualContext />
-      case 'metrics': return <MetricsPanel />
-      case 'conversation': return <TranscriptPanel />
-      case 'keyboard': return <KeyboardShortcutsPanel />
-      case 'settings': case 'sound': case 'accessibility':
+      case 'home':
+        return <HomePanel />
+      case 'conversation':
+        return <TranscriptPanel />
+      case 'visual':
+        return <VisualContext />
+      case 'metrics':
+        return <MetricsPanel />
+      case 'sound':
+        return <SoundPanel />
+      case 'accessibility':
+        return <AccessibilityPanel />
+      case 'keyboard':
+        return <KeyboardShortcutsPanel />
+      case 'settings':
         return <SettingsPanel onClose={() => setActivePanel('home')} />
-      default: return <VisualContext />
+      default:
+        return <HomePanel />
     }
   }
 
+  // Determine if the main content should show voice input or be hidden
+  const showVoiceInput = activePanel === 'home'
+  const showTranscriptMain = activePanel === 'conversation'
+
   return (
-    <div className="h-screen w-screen flex flex-col bg-[#0A0E17] text-white overflow-hidden" role="application" aria-label="VoiceBridge AI Dashboard">
-      <DashboardHeader />
+    <div
+      className={cn(
+        'h-screen w-screen flex flex-col bg-[#0A0E17] text-white overflow-hidden',
+        // Apply font size from settings
+        useSettingsStore.getState().fontSize === 'small' && 'text-[14px]',
+        useSettingsStore.getState().fontSize === 'large' && 'text-[18px]',
+        useSettingsStore.getState().fontSize === 'xlarge' && 'text-[20px]',
+      )}
+      role="application"
+      aria-label="VoiceBridge AI Dashboard"
+    >
+      <DashboardHeader onOpenHelp={handleOpenHelp} onReconnect={handleReconnect} />
 
       <div className="flex-1 flex overflow-hidden">
-        <NavigationSidebar activePanel={activePanel} onPanelChange={setActivePanel} />
+        <NavigationSidebar activePanel={activePanel} onPanelChange={handlePanelChange} />
 
         <main className="flex-1 flex flex-col overflow-hidden" role="main">
-          {/* Voice Input Section */}
-          <div className={cn(
-            'flex flex-col items-center justify-center gap-6 px-4 py-8 border-b border-white/5',
-            activePanel === 'conversation' ? 'hidden lg:flex' : 'flex'
-          )}>
-            <div className="text-center max-w-md">
-              <h2 className="text-xl font-semibold mb-2">
-                <span className="vb-gradient-text">VoiceBridge</span> AI
-              </h2>
-              <p className="text-sm text-[#6C757D]">
-                Tap the microphone or press Space to start speaking. I will help you navigate and understand this page.
-              </p>
+          {/* Voice Input Section — shown on Home panel */}
+          {showVoiceInput && (
+            <div className="flex flex-col items-center justify-center gap-6 px-4 py-8 border-b border-white/5 animate-vb-fade-in">
+              <div className="text-center max-w-md">
+                <h2 className="text-xl font-semibold mb-2">
+                  <span className="vb-gradient-text">VoiceBridge</span> AI
+                </h2>
+                <p className="text-sm text-[#6C757D]">
+                  Tap the microphone or press Space to start speaking. I will help you navigate and understand this page.
+                </p>
+              </div>
+              <ErrorBoundary>
+                <VoiceInput onToggle={toggleMic} isListening={isListening} isSupported={isSupported} recognitionError={recError} />
+              </ErrorBoundary>
+              <div className="w-full max-w-lg">
+                <ErrorBoundary>
+                  <QuickActions />
+                </ErrorBoundary>
+              </div>
             </div>
-            <VoiceInput onToggle={toggleMic} isListening={isListening} isSupported={isSupported} recognitionError={recError} />
-            <div className="w-full max-w-lg"><QuickActions /></div>
-          </div>
+          )}
 
-          {/* Transcript Panel */}
-          <div className={cn(
-            'flex-1 overflow-hidden',
-            activePanel === 'conversation' ? 'flex flex-col' : 'hidden lg:flex flex-col'
-          )}>
-            <TranscriptPanel />
-          </div>
+          {/* Conversation panel — full main area */}
+          {showTranscriptMain ? (
+            <div className="flex-1 flex flex-col overflow-hidden animate-vb-fade-in">
+              <TranscriptPanel />
+            </div>
+          ) : (
+            /* Transcript below voice input on home */
+            <div className="flex-1 overflow-hidden">
+              <TranscriptPanel />
+            </div>
+          )}
         </main>
 
         {/* Right Panel */}
-        <aside className="w-80 border-l border-white/5 bg-[#0D1117]/40 flex-shrink-0 overflow-hidden hidden lg:flex flex-col" role="complementary" aria-label="Context and tools panel">
-          {renderRightPanel()}
+        <aside
+          className="w-80 border-l border-white/5 bg-[#0D1117]/40 flex-shrink-0 overflow-hidden hidden lg:flex flex-col"
+          role="complementary"
+          aria-label="Context and tools panel"
+        >
+          <ErrorBoundary>
+            {renderRightPanel()}
+          </ErrorBoundary>
         </aside>
       </div>
 
-      {/* Settings Drawer */}
+      {/* Settings Drawer (overlay) */}
       {isSettingsOpen && (
         <div className="fixed inset-0 z-50 flex justify-end">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setSettingsOpen(false)} aria-hidden="true" />
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setSettingsOpen(false)}
+            aria-hidden="true"
+          />
           <div className="relative w-full max-w-md h-full bg-[#111827] border-l border-white/5 shadow-2xl animate-vb-slide-in-right">
             <SettingsPanel onClose={() => setSettingsOpen(false)} />
           </div>
         </div>
       )}
 
-      {/* Onboarding */}
+      {/* Onboarding Overlay */}
       {onboarding && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md" role="dialog" aria-modal="true" aria-label="Welcome to VoiceBridge AI">
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-md"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Welcome to VoiceBridge AI"
+        >
           <div className="max-w-md w-full mx-4 animate-vb-fade-in">
             <div className="vb-glass rounded-2xl p-8 text-center">
               <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#00F0FF] to-[#5CE0D8] flex items-center justify-center mx-auto mb-6">
@@ -342,7 +429,12 @@ export default function VoiceBridgeDashboard() {
                   </li>
                 </ul>
               </div>
-              <Button onClick={dismissOnboarding} className="w-full bg-[#00F0FF] text-[#0A0E17] hover:bg-[#00F0FF]/90 font-medium" aria-label="Get started with VoiceBridge AI" autoFocus>
+              <Button
+                onClick={dismissOnboarding}
+                className="w-full bg-[#00F0FF] text-[#0A0E17] hover:bg-[#00F0FF]/90 font-medium"
+                aria-label="Get started with VoiceBridge AI"
+                autoFocus
+              >
                 Get Started
               </Button>
             </div>

@@ -1,4 +1,4 @@
-'client'
+'use client'
 
 import { getKeyboardShortcuts } from '@/lib/accessibility-utils'
 
