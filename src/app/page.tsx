@@ -101,7 +101,7 @@ export default function VoiceBridgeDashboard() {
               }, 3000)
             })
           } else {
-            responseText = `I understand: \"${text}\". Offline mode. Try \"describe the page\" or \"read content\".`
+            responseText = `I understand: \"${text}\". I'm processing locally. Try \"describe the page\" or \"read content\".`
           }
         }
 

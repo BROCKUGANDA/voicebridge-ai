@@ -60,7 +60,7 @@ export const useVoiceStore = create<VoiceStore>((set) => ({
   currentTranscript: '',
   messages: [],
   visualData: null,
-  isWebSocketConnected: false,
+  isWebSocketConnected: true,
   audioLevel: 0,
   currentResponse: '',
   processingStartTime: null,
