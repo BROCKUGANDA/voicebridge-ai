@@ -9,18 +9,13 @@ import {
   Settings,
   CheckCircle2,
   XCircle,
-  Wifi,
-  WifiOff,
   Lightbulb,
 } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Badge } from '@/components/ui/badge'
-import { useVoiceStore } from '@/stores/voice-store'
-import { useSettingsStore } from '@/stores/settings-store'
-import { VoiceBridgeLogo } from '@/components/voicebridge/VoiceBridgeLogo'
+import { VoiceBridgeLogo } from './VoiceBridgeLogo'
 
 export function HomePanel() {
-  const isWebSocketConnected = useVoiceStore((s) => s.isWebSocketConnected)
   const [speechSupported, setSpeechSupported] = useState<boolean | null>(() => {
     if (typeof window === 'undefined') return null
     return 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window
@@ -162,21 +157,14 @@ export function HomePanel() {
                 </div>
               </div>
 
-              {/* WebSocket connection */}
+              {/* Voice Service — always online via browser APIs */}
               <div className="flex items-center justify-between">
-                <span className="text-xs text-[#6C757D]">WebSocket</span>
+                <span className="text-xs text-[#6C757D]">Voice Service</span>
                 <div className="flex items-center gap-1.5">
-                  {isWebSocketConnected ? (
-                    <Badge className="text-[10px] px-1.5 py-0 bg-[#51CF66]/15 text-[#51CF66] border-[#51CF66]/20 hover:bg-[#51CF66]/20">
-                      <Wifi className="w-3 h-3 mr-1" aria-hidden="true" />
-                      Connected
-                    </Badge>
-                  ) : (
-                    <Badge className="text-[10px] px-1.5 py-0 bg-[#FF6B6B]/15 text-[#FF6B6B] border-[#FF6B6B]/20 hover:bg-[#FF6B6B]/20">
-                      <WifiOff className="w-3 h-3 mr-1" aria-hidden="true" />
-                      Disconnected
-                    </Badge>
-                  )}
+                  <Badge className="text-[10px] px-1.5 py-0 bg-[#51CF66]/15 text-[#51CF66] border-[#51CF66]/20 hover:bg-[#51CF66]/20">
+                    <CheckCircle2 className="w-3 h-3 mr-1" aria-hidden="true" />
+                    Online
+                  </Badge>
                 </div>
               </div>
 
