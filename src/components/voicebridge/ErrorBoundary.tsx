@@ -43,7 +43,7 @@ export class ErrorBoundary extends Component<Props, State> {
         >
           <AlertTriangle className="w-10 h-10 text-[#FFB627] mb-4" />
           <h2 className="text-sm font-medium text-white/80 mb-2">Something went wrong</h2>
-          <p className="text-xs text-[#6C757D] mb-4 max-w-sm">
+          <p className="text-xs text-[#8B98A8] mb-4 max-w-sm">
             {this.state.error?.message || 'An unexpected error occurred.'}
           </p>
           <Button

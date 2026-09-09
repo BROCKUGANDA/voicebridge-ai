@@ -1,0 +1,131 @@
+- application "VoiceBridge AI Dashboard" [ref=e2]:
+  - banner [ref=e3]:
+    - generic [ref=e4]:
+      - img "VoiceBridge AI logo" [ref=e5]
+      - generic [ref=e14]:
+        - heading "VoiceBridge AI" [level=1] [ref=e15]
+        - paragraph [ref=e16]: Accessibility Assistant
+    - generic [ref=e17]:
+      - status [ref=e18]:
+        - generic [ref=e21]: Ready
+      - generic [ref=e22]: "Session: 0:00"
+    - generic [ref=e23]:
+      - button "Mute all output" [ref=e24]
+      - button "Open settings" [ref=e25]
+      - button "Open help and keyboard shortcuts" [ref=e26]
+  - generic [ref=e27]:
+    - navigation "Main navigation" [ref=e28]:
+      - button "Go to home dashboard" [ref=e29]:
+        - generic [ref=e34]: Home
+      - button "View conversation history" [ref=e35]:
+        - generic [ref=e38]: Chat
+      - button "Visual context panel" [ref=e39]:
+        - generic [ref=e43]: Vision
+      - button "View accessibility metrics" [ref=e44]:
+        - generic [ref=e47]: Metrics
+      - button "Sound design settings" [ref=e48]:
+        - generic [ref=e53]: Sound
+      - button "Accessibility settings" [ref=e54]:
+        - generic [ref=e61]: A11y
+      - button "Keyboard shortcuts" [ref=e62]:
+        - generic [ref=e65]: Keys
+      - button "All settings" [ref=e66]:
+        - generic [ref=e70]: Settings
+    - main [ref=e73]:
+      - generic [ref=e74]:
+        - generic [ref=e75]:
+          - heading "VoiceBridge AI" [level=2] [ref=e76]
+          - paragraph [ref=e77]: Tap the power button to start the voice agent. I will help you navigate and understand this page.
+        - generic [ref=e78]:
+          - generic [ref=e79]:
+            - button "Start voice agent" [ref=e80]
+            - button "Voice agent idle. Press the button to begin a conversation." [disabled] [ref=e85]
+          - paragraph [ref=e89]: Tap power to start
+          - form "Type a command for VoiceBridge" [ref=e91]:
+            - generic [ref=e92]: Type a voice command
+            - textbox "Type a voice command" [ref=e93]:
+              - /placeholder: Try "describe the page", "help", or "switch to metrics"
+            - button "Send typed command" [disabled]
+        - group [ref=e94]:
+          - generic "Use legacy mic (Web Speech API)" [ref=e95] [cursor=pointer]
+        - generic [ref=e97]:
+          - paragraph [ref=e98]: Quick Actions
+          - generic [ref=e99]:
+            - 'button "Describe Page: Hear a description of what is on screen" [ref=e100]':
+              - generic [ref=e104]: Describe Page
+            - 'button "Read Content: Read all text content aloud" [ref=e105]':
+              - generic [ref=e108]: Read Content
+            - 'button "Find Element: Search for a specific element on the page" [ref=e109]':
+              - generic [ref=e113]: Find Element
+            - 'button "Go Back: Navigate to the previous page" [ref=e114]':
+              - generic [ref=e117]: Go Back
+            - 'button "Go Forward: Navigate to the next page" [ref=e118]':
+              - generic [ref=e121]: Go Forward
+            - 'button "Refresh Page: Reload the current page" [ref=e122]':
+              - generic [ref=e128]: Refresh Page
+            - 'button "Help: Hear available commands and tips" [ref=e129]':
+              - generic [ref=e133]: Help
+      - generic [ref=e135]:
+        - generic [ref=e136]:
+          - heading "Conversation" [level=2] [ref=e137]
+          - generic [ref=e138]:
+            - generic [ref=e139]: 0 messages
+            - button "Download transcript as text" [disabled]
+            - button "Clear conversation" [disabled]
+        - generic [ref=e144]:
+          - paragraph [ref=e148]: Your conversation will appear here.
+          - paragraph [ref=e149]: Press Space or tap the microphone to start.
+    - complementary "Context and tools panel" [ref=e150]:
+      - generic [ref=e151]:
+        - generic [ref=e153]:
+          - img "VoiceBridge AI logo" [ref=e154]
+          - heading "Welcome to VoiceBridge AI" [level=2] [ref=e163]
+        - generic [ref=e167]:
+          - paragraph [ref=e168]: VoiceBridge AI is your accessible voice-powered assistant. Interact with any web page using natural speech, get real-time visual descriptions, and navigate with full keyboard and screen-reader support.
+          - region [ref=e169]:
+            - heading "Quick Start Guide" [level=3] [ref=e173]
+            - list "Quick start steps" [ref=e174]:
+              - listitem [ref=e175]:
+                - generic [aria-hidden] [ref=e176]: "1"
+                - generic [ref=e177]: Tap the microphone or press Space to speak
+              - listitem [ref=e182]:
+                - generic [aria-hidden] [ref=e183]: "2"
+                - generic [ref=e184]: Say 'describe the page' for visual analysis
+              - listitem [ref=e189]:
+                - generic [aria-hidden] [ref=e190]: "3"
+                - generic [ref=e191]: All conversations are saved automatically
+              - listitem [ref=e195]:
+                - generic [aria-hidden] [ref=e196]: "4"
+                - generic [ref=e197]: Customize voice, sound, and accessibility in Settings
+          - region [ref=e202]:
+            - heading "System Status" [level=3] [ref=e203]
+            - generic [ref=e204]:
+              - generic [ref=e205]:
+                - generic [ref=e206]: Speech API
+                - generic [ref=e207]: Checking…
+              - generic [ref=e209]:
+                - generic [ref=e210]: Voice Service
+                - generic [ref=e211]: Online
+              - generic [ref=e213]:
+                - generic [ref=e214]: Available Voices
+                - generic [ref=e215]: 0 voices
+          - region [ref=e216]:
+            - heading "Accessibility Tips" [level=3] [ref=e220]
+            - generic [ref=e221]:
+              - paragraph [ref=e222]:
+                - generic [aria-hidden] [ref=e223]: •
+                - text: Use keyboard shortcuts for faster navigation — press Ctrl+/ for help.
+              - paragraph [ref=e224]:
+                - generic [aria-hidden] [ref=e225]: •
+                - text: Enable Auto-Describe in Settings to hear page descriptions automatically.
+              - paragraph [ref=e226]:
+                - generic [aria-hidden] [ref=e227]: •
+                - text: Reduce motion animations in Accessibility settings if they cause discomfort.
+  - contentinfo [ref=e228]:
+    - generic [ref=e229]:
+      - generic [ref=e230]: VoiceBridge AI v1.0.0
+      - generic [ref=e231]: "|"
+      - generic [ref=e232]: AssemblyAI Voice Agent Hackathon
+    - generic [ref=e233]:
+      - generic [ref=e234]: Ctrl+/ for help
+      - generic [ref=e235]: Alt+1–7 to switch panels

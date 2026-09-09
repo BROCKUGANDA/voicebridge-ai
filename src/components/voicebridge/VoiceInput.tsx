@@ -71,7 +71,7 @@ export function VoiceInput({ onToggle, isListening, isSupported, recognitionErro
       {/* Live Transcript */}
       {transcript && voiceState === 'listening' && (
         <div className="animate-vb-fade-in text-center px-4 py-2 rounded-lg bg-white/5 border border-[#00F0FF]/20">
-          <p className="text-sm text-[#6C757D] mb-1">Hearing:</p>
+          <p className="text-sm text-[#8B98A8] mb-1">Hearing:</p>
           <p className="text-[#00F0FF] text-lg font-medium">{transcript}</p>
         </div>
       )}
@@ -112,7 +112,7 @@ export function VoiceInput({ onToggle, isListening, isSupported, recognitionErro
       </button>
 
       {/* Status Label */}
-      <p className="text-sm text-[#6C757D]" aria-live="polite">
+      <p className="text-sm text-[#8B98A8]" aria-live="polite">
         {config.label}
       </p>
 
@@ -131,7 +131,7 @@ export function VoiceInput({ onToggle, isListening, isSupported, recognitionErro
       )}
 
       {/* Keyboard hint */}
-      <p className="text-xs text-[#6C757D]/60 sr-only">
+      <p className="text-xs text-[#8B98A8]/60 sr-only">
         Press Space to toggle microphone
       </p>
     </div>

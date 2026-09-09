@@ -32,6 +32,8 @@ export function QuickActions() {
   const { playCompletion, playError } = useSoundFeedback()
   const { addMessage, setVoiceState } = useVoiceStore()
   const { recordCommand, addToContext } = useConversationStore()
+  // Reactive (not getState-in-render) so disabled state tracks voice state.
+  const voiceState = useVoiceStore((s) => s.voiceState)
 
   const executeAction = (label: string, responseText: string) => {
     addMessage({
@@ -82,7 +84,7 @@ export function QuickActions() {
       color: 'text-[#5CE0D8] hover:bg-[#5CE0D8]/10 border-[#5CE0D8]/20',
       action: () => {
         const body = document.body
-        const main = body.querySelector('main, [role="main"]') || body
+        const main = body.querySelector<HTMLElement>('main, [role="main"]') || body
         const text = main.innerText?.substring(0, 2000) || 'No text content found on this page.'
         executeAction('Read Content', text)
       },
@@ -145,7 +147,7 @@ export function QuickActions() {
 
   return (
     <div className="flex flex-col gap-2">
-      <p className="text-xs text-[#6C757D] px-1">Quick Actions</p>
+      <p className="text-xs text-[#8B98A8] px-1">Quick Actions</p>
       <div className="grid grid-cols-3 sm:grid-cols-4 gap-2">
         {actions.map((action) => {
           const Icon = action.icon
@@ -160,7 +162,7 @@ export function QuickActions() {
                 action.color
               )}
               aria-label={`${action.label}: ${action.description}`}
-              disabled={useVoiceStore.getState().voiceState === 'processing' || useVoiceStore.getState().voiceState === 'speaking'}
+              disabled={voiceState === 'processing' || voiceState === 'speaking'}
             >
               <Icon className="w-5 h-5" />
               <span className="text-[10px] text-center leading-tight">{action.label}</span>

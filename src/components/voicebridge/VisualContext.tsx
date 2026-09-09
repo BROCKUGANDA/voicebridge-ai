@@ -43,9 +43,9 @@ export function VisualContext() {
           aria-label={isExpanded ? 'Collapse visual context' : 'Expand visual context'}
         >
           {isExpanded ? (
-            <ChevronUp className="w-4 h-4 text-[#6C757D]" />
+            <ChevronUp className="w-4 h-4 text-[#8B98A8]" />
           ) : (
-            <ChevronDown className="w-4 h-4 text-[#6C757D]" />
+            <ChevronDown className="w-4 h-4 text-[#8B98A8]" />
           )}
         </button>
       </div>
@@ -70,7 +70,7 @@ export function VisualContext() {
             <div className="px-3 pb-3 animate-vb-fade-in">
               <div className="rounded-lg bg-white/3 p-3 border border-white/5">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs text-[#6C757D]">Page Summary</span>
+                  <span className="text-xs text-[#8B98A8]">Page Summary</span>
                   <Badge variant="outline" className="text-[10px] border-[#5CE0D8]/30 text-[#5CE0D8]">
                     {Math.round(visualData.confidence * 100)}% confident
                   </Badge>
@@ -99,7 +99,7 @@ export function VisualContext() {
                     'flex items-center gap-1 px-2 py-1 rounded text-xs transition-colors',
                     filterType === type
                       ? 'bg-[#00F0FF]/20 text-[#00F0FF]'
-                      : 'text-[#6C757D] hover:text-white/70 hover:bg-white/5'
+                      : 'text-[#8B98A8] hover:text-white/70 hover:bg-white/5'
                   )}
                   aria-pressed={filterType === type}
                 >
@@ -123,14 +123,14 @@ export function VisualContext() {
                   >
                     <Badge
                       variant="outline"
-                      className="text-[9px] border-white/10 text-[#6C757D] shrink-0 mt-0.5"
+                      className="text-[9px] border-white/10 text-[#8B98A8] shrink-0 mt-0.5"
                     >
                       {el.type}
                     </Badge>
                     <div className="flex-1 min-w-0">
                       <p className="text-xs text-white/80 truncate">{el.label}</p>
                       {el.description !== el.label && (
-                        <p className="text-[10px] text-[#6C757D] truncate mt-0.5">
+                        <p className="text-[10px] text-[#8B98A8] truncate mt-0.5">
                           {el.description}
                         </p>
                       )}
@@ -139,13 +139,13 @@ export function VisualContext() {
                 ))}
               </div>
             ) : visualData ? (
-              <p className="text-xs text-[#6C757D] text-center py-4">
+              <p className="text-xs text-[#8B98A8] text-center py-4">
                 No elements match the current filter.
               </p>
             ) : (
               <div className="text-center py-8">
-                <Eye className="w-8 h-8 text-[#6C757D]/30 mx-auto mb-2" />
-                <p className="text-xs text-[#6C757D]">
+                <Eye className="w-8 h-8 text-[#8B98A8]/30 mx-auto mb-2" />
+                <p className="text-xs text-[#8B98A8]">
                   Click &quot;Analyze Current Page&quot; to see visual context.
                 </p>
               </div>

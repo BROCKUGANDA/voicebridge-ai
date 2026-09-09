@@ -4,6 +4,22 @@ import { persist } from 'zustand/middleware'
 export type ResponseVerbosity = 'concise' | 'balanced' | 'detailed'
 export type SoundTheme = 'minimal' | 'detailed' | 'verbose' | 'off'
 export type FontSize = 'small' | 'medium' | 'large' | 'xlarge'
+export type VoiceEnginePref = 'auto' | 'assemblyai-agent' | 'on-device-vosk' | 'web-speech' | 'text-input'
+
+/** Debounced server push — keeps agent-driven prefs and UI prefs in sync. */
+let prefsPushTimer: ReturnType<typeof setTimeout> | null = null
+function schedulePrefsPush(prefs: Partial<UserPreferences>): void {
+  if (prefsPushTimer) clearTimeout(prefsPushTimer)
+  prefsPushTimer = setTimeout(() => {
+    prefsPushTimer = null
+    // Lazy import avoids a client/server cycle at module load.
+    void import('@/lib/api-client')
+      .then(({ apiFetch }) =>
+        apiFetch('/api/preferences', { method: 'PUT', body: prefs }).catch(() => {}),
+      )
+      .catch(() => {})
+  }, 800)
+}
 
 export interface UserPreferences {
   // Voice Settings
@@ -12,6 +28,11 @@ export interface UserPreferences {
   voiceVolume: number
   selectedVoice: string
   responseVerbosity: ResponseVerbosity
+
+  // Engine Selection (Stage 2)
+  voiceEnginePref: VoiceEnginePref
+  /** When true, automatically retry primary after a successful fallback. */
+  autoRecoverPrimary: boolean
 
   // Sound Design
   soundTheme: SoundTheme
@@ -49,6 +70,8 @@ const defaultPreferences: UserPreferences = {
   voiceVolume: 0.8,
   selectedVoice: 'default',
   responseVerbosity: 'balanced',
+  voiceEnginePref: 'auto',
+  autoRecoverPrimary: true,
   soundTheme: 'minimal',
   soundVolume: 0.5,
   hapticFeedback: true,
@@ -72,7 +95,14 @@ export const useSettingsStore = create<SettingsStore>()(
       setSettingsOpen: (isSettingsOpen) => set({ isSettingsOpen }),
       setActiveSettingsTab: (activeSettingsTab) => set({ activeSettingsTab }),
 
-      updatePreferences: (prefs) => set((state) => ({ ...state, ...prefs })),
+      updatePreferences: (prefs) => {
+        set((state) => ({ ...state, ...prefs }))
+        // Fire-and-forget server sync so the agent sees UI changes and
+        // multi-device sessions stay consistent. Skipped on the server.
+        if (typeof window !== 'undefined') {
+          schedulePrefsPush(prefs)
+        }
+      },
 
       resetPreferences: () => set({ ...defaultPreferences }),
 
@@ -94,6 +124,8 @@ export const useSettingsStore = create<SettingsStore>()(
         voiceVolume: state.voiceVolume,
         selectedVoice: state.selectedVoice,
         responseVerbosity: state.responseVerbosity,
+        voiceEnginePref: state.voiceEnginePref,
+        autoRecoverPrimary: state.autoRecoverPrimary,
         soundTheme: state.soundTheme,
         soundVolume: state.soundVolume,
         hapticFeedback: state.hapticFeedback,

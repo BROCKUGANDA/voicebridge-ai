@@ -66,7 +66,7 @@ export function NavigationSidebar({ activePanel, onPanelChange }: NavigationSide
               'focus-visible:outline-2 focus-visible:outline-[#00F0FF] focus-visible:outline-offset-1',
               isActive
                 ? 'bg-[#00F0FF]/15 text-[#00F0FF]'
-                : 'text-[#6C757D] hover:text-white hover:bg-white/5'
+                : 'text-[#8B98A8] hover:text-white hover:bg-white/5'
             )}
             aria-label={item.ariaLabel}
             aria-current={isActive ? 'page' : undefined}
@@ -89,7 +89,7 @@ export function NavigationSidebar({ activePanel, onPanelChange }: NavigationSide
             voiceState === 'listening' ? 'bg-[#00F0FF] animate-pulse' :
             voiceState === 'speaking' ? 'bg-[#5CE0D8] animate-pulse' :
             voiceState === 'error' ? 'bg-[#FF6B6B]' :
-            'bg-[#6C757D]'
+            'bg-[#8B98A8]'
           )}
           aria-hidden="true"
         />

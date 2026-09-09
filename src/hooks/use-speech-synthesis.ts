@@ -19,15 +19,17 @@ interface UseSpeechSynthesisReturn {
 export function useSpeechSynthesis(): UseSpeechSynthesisReturn {
   const utteranceRef = useRef<SpeechSynthesisUtterance | null>(null)
 
-  const { addMessage, setVoiceState, updateLastAssistantMessage } = useVoiceStore()
-  const {
-    voiceSpeed,
-    voicePitch,
-    voiceVolume,
-    selectedVoice,
-    soundVolume,
-    hapticFeedback: hapticOn,
-  } = useSettingsStore()
+  // Selector subscriptions — full-store pulls re-render every consumer on
+  // each message and feed the update-depth loop.
+  const addMessage = useVoiceStore((s) => s.addMessage)
+  const setVoiceState = useVoiceStore((s) => s.setVoiceState)
+  const updateLastAssistantMessage = useVoiceStore((s) => s.updateLastAssistantMessage)
+  const voiceSpeed = useSettingsStore((s) => s.voiceSpeed)
+  const voicePitch = useSettingsStore((s) => s.voicePitch)
+  const voiceVolume = useSettingsStore((s) => s.voiceVolume)
+  const selectedVoice = useSettingsStore((s) => s.selectedVoice)
+  const soundVolume = useSettingsStore((s) => s.soundVolume)
+  const hapticOn = useSettingsStore((s) => s.hapticFeedback)
 
   const applyPronunciationOverrides = useCallback(
     (text: string): string => {

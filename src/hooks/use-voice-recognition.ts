@@ -17,7 +17,22 @@ interface UseVoiceRecognitionReturn {
   isSupported: boolean
 }
 
-// Extend Window type for Web Speech API
+// Extend the DOM with the Web Speech API types Chrome/Edge ship but
+// lib.dom.d.ts doesn't declare under this exact name.
+interface SpeechRecognitionLike {
+  continuous: boolean
+  interimResults: boolean
+  lang: string
+  maxAlternatives: number
+  onstart: (() => void) | null
+  onresult: ((ev: Event) => void) | null
+  onerror: ((ev: Event) => void) | null
+  onend: (() => void) | null
+  start(): void
+  stop(): void
+  abort(): void
+}
+
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList
   resultIndex: number
@@ -31,7 +46,7 @@ export function useVoiceRecognition(
     return 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window
   })
   const [error, setError] = useState<string | null>(null)
-  const recognitionRef = useRef<SpeechRecognition | null>(null)
+  const recognitionRef = useRef<SpeechRecognitionLike | null>(null)
   const streamRef = useRef<MediaStream | null>(null)
   const analyserRef = useRef<AnalyserNode | null>(null)
   const animFrameRef = useRef<number>(0)
@@ -39,7 +54,7 @@ export function useVoiceRecognition(
   const { setVoiceState, setCurrentTranscript, addMessage, setAudioLevel, setError: setStoreError } = useVoiceStore()
   const { soundVolume, hapticFeedback: hapticOn, keyboardShortcuts } = useSettingsStore()
 
-  const dataArrayRef = useRef<Uint8Array>(new Uint8Array(128))
+  const dataArrayRef = useRef<Uint8Array<ArrayBuffer>>(new Uint8Array(new ArrayBuffer(128)))
 
   const startAudioMonitoring = useCallback(async () => {
     try {
@@ -52,7 +67,7 @@ export function useVoiceRecognition(
       analyser.fftSize = 256
       source.connect(analyser)
       analyserRef.current = analyser
-      dataArrayRef.current = new Uint8Array(analyser.frequencyBinCount)
+      dataArrayRef.current = new Uint8Array(new ArrayBuffer(analyser.frequencyBinCount))
 
       const monitorLevel = () => {
         if (analyserRef.current) {
@@ -65,8 +80,12 @@ export function useVoiceRecognition(
         animFrameRef.current = requestAnimationFrame(monitorLevel)
       }
       monitorLevel()
-    } catch {
-      // Audio monitoring not available, continue without it
+    } catch (err) {
+      // Mic permission denied or hardware unavailable — say so instead of
+      // failing silently into a waveform that never moves.
+      const m = err instanceof Error ? err.message : 'microphone unavailable'
+      console.warn('[VB] audio monitoring unavailable:', m)
+      setError(`Audio monitoring unavailable: ${m}`)
     }
   }, [setAudioLevel])
 
@@ -116,7 +135,7 @@ export function useVoiceRecognition(
     setError(null)
     setStoreError(null)
 
-    const recognition = new (SpeechRecognitionAPI as new () => SpeechRecognition)()
+    const recognition = new (SpeechRecognitionAPI as new () => SpeechRecognitionLike)()
     recognition.continuous = false
     recognition.interimResults = true
     recognition.lang = 'en-US'

@@ -1,0 +1,3 @@
+file 'C:/Users/HP/Desktop/voicebrigdeai/download/demo-video/a-0.wav'
+file 'C:/Users/HP/Desktop/voicebrigdeai/download/demo-video/a-1.wav'
+file 'C:/Users/HP/Desktop/voicebrigdeai/download/demo-video/a-2.wav'

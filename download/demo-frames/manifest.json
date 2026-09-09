@@ -1,0 +1,55 @@
+{
+  "baseUrl": "http://localhost:3000",
+  "beats": [
+    {
+      "name": "login",
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\01-login.png",
+      "note": "Sign-in gate — production auth"
+    },
+    {
+      "name": "login-filled",
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\02-login-filled.png",
+      "note": "Passphrase entered"
+    },
+    {
+      "name": "home-ready",
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\03-home-ready.png",
+      "note": "Dashboard ready — power off"
+    },
+    {
+      "name": "power-on",
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\04-power-on.png",
+      "note": "Agent starting / engine status"
+    },
+    {
+      "name": "metrics",
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\05-metrics.png",
+      "note": "Open metrics — panel switch"
+    },
+    {
+      "name": "settings",
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\06-settings.png",
+      "note": "Settings drawer — prefs surface"
+    },
+    {
+      "name": "engine-tab",
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\07-engine-tab.png",
+      "note": "Multi-engine ladder UI"
+    },
+    {
+      "name": "conversation",
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\08-conversation.png",
+      "note": "Live transcript history"
+    },
+    {
+      "name": "a11y",
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\09-a11y.png",
+      "note": "Accessibility controls"
+    },
+    {
+      "name": "home-final",
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\10-home-final.png",
+      "note": "Closing hero shot"
+    }
+  ]
+}

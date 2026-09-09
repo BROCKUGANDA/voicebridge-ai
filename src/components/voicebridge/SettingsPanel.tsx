@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useSettingsStore, type ResponseVerbosity, type SoundTheme, type FontSize } from '@/stores/settings-store'
+import { useSettingsStore, type ResponseVerbosity, type SoundTheme, type FontSize, type VoiceEnginePref } from '@/stores/settings-store'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { Slider } from '@/components/ui/slider'
 import { Switch } from '@/components/ui/switch'
@@ -12,7 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 import { useSoundFeedback } from '@/hooks/use-sound-feedback'
 import { soundEngine } from '@/lib/sound-engine'
-import { X, RotateCcw, Volume2, Eye, Keyboard, Sliders } from 'lucide-react'
+import { X, RotateCcw, Volume2, Eye, Keyboard, Sliders, Cpu } from 'lucide-react'
 
 type SoundType = 'action-confirmation' | 'error-notification' | 'progress-indicator' | 'completion' | 'attention-required' | 'navigation' | 'state-change' | 'mic-on' | 'mic-off' | 'message-received'
 
@@ -47,13 +47,13 @@ export function SettingsPanel({ onClose, initialTab }: { onClose: () => void; in
 
   return (
     <div className="flex flex-col h-full animate-vb-fade-in">
-      {/* Header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-white/5">
+      {/* Header — close sits above the tabs so nothing intercepts it. */}
+      <div className="relative z-20 flex items-center justify-between px-4 py-3 border-b border-white/5 bg-[#111827]">
         <h2 className="text-sm font-medium text-white/80">Settings</h2>
         <Button
           variant="ghost"
           size="icon"
-          className="h-7 w-7 text-[#6C757D] hover:text-white"
+          className="h-7 w-7 text-[#8B98A8] hover:text-white relative z-30"
           onClick={onClose}
           aria-label="Close settings"
         >
@@ -76,6 +76,9 @@ export function SettingsPanel({ onClose, initialTab }: { onClose: () => void; in
               </TabsTrigger>
               <TabsTrigger value="keyboard" className="text-xs gap-1.5 data-[state=active]:bg-[#00F0FF]/20 data-[state=active]:text-[#00F0FF]">
                 <Keyboard className="w-3 h-3" /> Keys
+              </TabsTrigger>
+              <TabsTrigger value="engine" className="text-xs gap-1.5 data-[state=active]:bg-[#00F0FF]/20 data-[state=active]:text-[#00F0FF]">
+                <Cpu className="w-3 h-3" /> Engine
               </TabsTrigger>
             </TabsList>
 
@@ -254,7 +257,7 @@ export function SettingsPanel({ onClose, initialTab }: { onClose: () => void; in
               />
 
               <div className="space-y-2">
-                <Label className="text-xs text-[#6C757D]">Preview Sounds</Label>
+                <Label className="text-xs text-[#8B98A8]">Preview Sounds</Label>
                 <div className="grid grid-cols-2 gap-2">
                   {[
                     { label: 'Action', type: 'action-confirmation' as SoundType },
@@ -306,12 +309,52 @@ export function SettingsPanel({ onClose, initialTab }: { onClose: () => void; in
                 ].map(({ keys, desc }) => (
                   <div key={keys} className="flex items-center justify-between py-1.5">
                     <span className="text-xs text-white/70">{desc}</span>
-                    <kbd className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] text-[#6C757D] font-mono">
+                    <kbd className="px-2 py-0.5 rounded bg-white/5 border border-white/10 text-[10px] text-[#8B98A8] font-mono">
                       {keys}
                     </kbd>
                   </div>
                 ))}
               </div>
+            </TabsContent>
+
+            {/* Engine Tab (Stage 2) */}
+            <TabsContent value="engine" className="mt-4 space-y-4">
+              <SettingsRow label="Voice Engine">
+                <Select
+                  value={store.voiceEnginePref}
+                  onValueChange={(v) => update({ voiceEnginePref: v as VoiceEnginePref })}
+                >
+                  <SelectTrigger className="w-full bg-white/5 border-white/10 text-xs">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">Auto (try cloud, fall back)</SelectItem>
+                    <SelectItem value="assemblyai-agent">AssemblyAI Voice Agent</SelectItem>
+                    <SelectItem value="on-device-vosk">On-device (Vosk, offline)</SelectItem>
+                    <SelectItem value="web-speech">Browser speech recognition</SelectItem>
+                    <SelectItem value="text-input">Text only</SelectItem>
+                  </SelectContent>
+                </Select>
+              </SettingsRow>
+
+              <SettingsSwitchRow
+                label="Auto-recover primary"
+                description="After a fallback, retry the cloud agent periodically."
+                checked={store.autoRecoverPrimary}
+                onCheckedChange={(v) => update({ autoRecoverPrimary: v })}
+              />
+
+              <div className="rounded-md border border-white/5 bg-white/[0.02] p-3 text-[11px] text-[#8B98A8] space-y-1.5">
+                <p className="text-white/70">Engine ladder (Auto):</p>
+                <p>1. <span className="text-[#00F0FF]">AssemblyAI</span> — full-duplex cloud agent (best quality, requires API key + network).</p>
+                <p>2. <span className="text-[#FFB627]">On-device Vosk</span> — offline WASM speech recognition. ~40MB model download on first use.</p>
+                <p>3. <span className="text-white/80">Browser speech</span> — uses your browser built-in recognition (typically Google).</p>
+                <p>4. <span className="text-white/60">Text input</span> — type every command.</p>
+              </div>
+
+              <p className="text-[10px] text-[#8B98A8]">
+                Engine selection is persisted in your browser. When the cloud agent is unreachable, VoiceBridge automatically falls back without interrupting your session.
+              </p>
             </TabsContent>
           </Tabs>
 
@@ -336,7 +379,7 @@ export function SettingsPanel({ onClose, initialTab }: { onClose: () => void; in
 function SettingsRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
-      <Label className="text-xs text-[#6C757D]">{label}</Label>
+      <Label className="text-xs text-[#8B98A8]">{label}</Label>
       {children}
     </div>
   )
@@ -362,7 +405,7 @@ function SettingsSliderRow({
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">
-        <Label className="text-xs text-[#6C757D]">{label}</Label>
+        <Label className="text-xs text-[#8B98A8]">{label}</Label>
         <span className="text-xs text-[#00F0FF] font-mono">{format(value)}</span>
       </div>
       <Slider
@@ -393,7 +436,7 @@ function SettingsSwitchRow({
     <div className="flex items-center justify-between py-1">
       <div>
         <Label className="text-xs text-white/80">{label}</Label>
-        <p className="text-[10px] text-[#6C757D]">{description}</p>
+        <p className="text-[10px] text-[#8B98A8]">{description}</p>
       </div>
       <Switch
         checked={checked}

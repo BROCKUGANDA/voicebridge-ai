@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import { Space_Grotesk, JetBrains_Mono } from "next/font/google"
 import "./globals.css"
-import { Toaster } from "@/components/ui/toaster"
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-space-grotesk",
@@ -31,7 +30,7 @@ export const metadata: Metadata = {
     "WCAG",
   ],
   icons: {
-    icon: "https://z-cdn.chatglm.cn/z-ai/static/logo.svg",
+    icon: "/favicon.svg",
   },
 }
 
@@ -46,8 +45,8 @@ export default function RootLayout({
         className={`${spaceGrotesk.variable} ${jetbrainsMono.variable} antialiased bg-[#0A0E17] text-white overflow-hidden`}
       >
         {children}
-        <Toaster />
-        {/* Screen reader live region */}
+        {/* Screen reader live region — the app's feedback channel is
+            sound + aria-live announcements, not visual toasts. */}
         <div id="vb-sr-announcer" className="sr-only" aria-live="assertive" aria-atomic="true" />
       </body>
     </html>
