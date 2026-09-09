@@ -1,0 +1,6 @@
+# Security researchers: please report issues responsibly.
+# We run a single-user accessibility dashboard behind auth + rate limits.
+Contact: mailto:security@voicebridge.local
+Preferred-Languages: en
+Policy: https://github.com/BROCKUGANDA/voicebridge-ai/security/policy
+Expires: 2027-09-30T23:59:00.000Z

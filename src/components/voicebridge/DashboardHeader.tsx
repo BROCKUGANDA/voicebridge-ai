@@ -6,7 +6,7 @@ import { cn } from '@/lib/utils'
 import { useConversationStore } from '@/stores/conversation-store'
 import { StatusIndicator } from './StatusIndicator'
 import { VoiceBridgeLogo } from './VoiceBridgeLogo'
-import { Settings, HelpCircle, Wifi, WifiOff, Volume2, VolumeX, RefreshCw } from 'lucide-react'
+import { Settings, HelpCircle, Volume2, VolumeX } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { soundEngine } from '@/lib/sound-engine'
 import { announceToScreenReader } from '@/lib/accessibility-utils'
@@ -14,16 +14,14 @@ import { useCallback } from 'react'
 
 interface DashboardHeaderProps {
   onOpenHelp?: () => void
-  onReconnect?: () => void
 }
 
-export function DashboardHeader({ onOpenHelp, onReconnect }: DashboardHeaderProps) {
+export function DashboardHeader({ onOpenHelp }: DashboardHeaderProps) {
   const voiceState = useVoiceStore((s) => s.voiceState)
   const isMuted = useVoiceStore((s) => s.isMuted)
-  const isWebSocketConnected = useVoiceStore((s) => s.isWebSocketConnected)
-  const { setSettingsOpen } = useSettingsStore()
   const metrics = useConversationStore((s) => s.metrics)
   const { sessionDuration } = metrics
+  const { setSettingsOpen, isSettingsOpen } = useSettingsStore()
 
   const toggleMute = useCallback(() => {
     const next = !isMuted
@@ -46,14 +44,10 @@ export function DashboardHeader({ onOpenHelp, onReconnect }: DashboardHeaderProp
       onOpenHelp()
     } else {
       announceToScreenReader(
-        'VoiceBridge AI help. Press Space to toggle microphone. Say describe the page to hear what is on screen. Say help for a list of commands. Press Ctrl+slash for keyboard shortcuts.'
+        'VoiceBridge AI help. Tap the power button to start the voice agent. Say describe the page to hear what is on screen. Say help for a list of commands. Press Ctrl+slash for keyboard shortcuts.'
       )
     }
     soundEngine.play('attention-required', 0.2)
-  }
-
-  const handleReconnect = () => {
-    if (onReconnect) onReconnect()
   }
 
   const formatDuration = (seconds: number): string => {
@@ -74,45 +68,27 @@ export function DashboardHeader({ onOpenHelp, onReconnect }: DashboardHeaderProp
           <h1 className="text-sm font-semibold text-white leading-none">
             VoiceBridge <span className="vb-gradient-text">AI</span>
           </h1>
-          <p className="text-[10px] text-[#6C757D]">Accessibility Assistant</p>
+          <p className="text-[10px] text-[#8B98A8]">Accessibility Assistant</p>
         </div>
       </div>
 
       {/* Center: Status */}
       <div className="flex items-center gap-4">
         <StatusIndicator state={voiceState} />
-        <div className="text-xs text-[#6C757D] hidden sm:block" aria-live="off">
+        <div className="text-xs text-[#8B98A8] hidden sm:block" aria-live="off">
           Session: {formatDuration(sessionDuration)}
         </div>
       </div>
 
       {/* Right: Actions */}
       <div className="flex items-center gap-2">
-        {/* Connection Status - click to reconnect */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="h-8 w-8 text-[#6C757D] hover:text-white"
-          onClick={handleReconnect}
-          aria-label={isWebSocketConnected ? 'WebSocket connected. Click to reconnect.' : 'WebSocket disconnected. Click to reconnect.'}
-        >
-          {isWebSocketConnected ? (
-            <Wifi className="w-4 h-4 text-[#51CF66]" />
-          ) : (
-            <div className="relative">
-              <WifiOff className="w-4 h-4 text-[#FF6B6B]" />
-              <RefreshCw className="w-2.5 h-2.5 text-[#FF6B6B] absolute -top-1 -right-1 animate-spin" />
-            </div>
-          )}
-        </Button>
-
         {/* Mute Toggle */}
         <Button
           variant="ghost"
           size="icon"
           className={cn(
             'h-8 w-8 hover:text-white',
-            isMuted ? 'text-[#FF6B6B]' : 'text-[#6C757D]'
+            isMuted ? 'text-[#FF6B6B]' : 'text-[#9AA4B2]'
           )}
           onClick={toggleMute}
           aria-label={isMuted ? 'Unmute all output' : 'Mute all output'}
@@ -125,10 +101,10 @@ export function DashboardHeader({ onOpenHelp, onReconnect }: DashboardHeaderProp
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-[#6C757D] hover:text-white"
+          className="h-8 w-8 text-[#9AA4B2] hover:text-white"
           onClick={openSettings}
           aria-label="Open settings"
-          aria-expanded={useSettingsStore.getState().isSettingsOpen}
+          aria-expanded={isSettingsOpen}
         >
           <Settings className="w-4 h-4" />
         </Button>
@@ -137,7 +113,7 @@ export function DashboardHeader({ onOpenHelp, onReconnect }: DashboardHeaderProp
         <Button
           variant="ghost"
           size="icon"
-          className="h-8 w-8 text-[#6C757D] hover:text-white"
+          className="h-8 w-8 text-[#9AA4B2] hover:text-white"
           onClick={handleHelp}
           aria-label="Open help and keyboard shortcuts"
         >

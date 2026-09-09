@@ -14,10 +14,11 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  preferences   UserPreferences?
-  conversations Conversation[]
-  sessions      VoiceSession[]
-  interactions  InteractionHistory[]
+  preferences     UserPreferences?
+  conversations   Conversation[]
+  sessions        VoiceSession[]
+  interactions    InteractionHistory[]
+  visualAnalyses  VisualAnalysis[]
 }
 
 model UserPreferences {
@@ -33,6 +34,8 @@ model UserPreferences {
   voiceVolume      Float   @default(0.8)
   selectedVoice    String  @default("default")
   responseVerbosity String  @default("balanced")
+  voiceEnginePref   String  @default("auto")
+  autoRecoverPrimary Boolean @default(true)
   soundTheme       String  @default("minimal")
   soundVolume      Float   @default(0.5)
   hapticFeedback   Boolean @default(true)
@@ -55,8 +58,8 @@ model Conversation {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  session     VoiceSession?     @relation(fields: [sessionId], references: [id])
+  user        User                 @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session     VoiceSession?         @relation(fields: [sessionId], references: [id], onDelete: SetNull)
   messages    ConversationMessage[]
 
   @@index([userId])
@@ -88,8 +91,11 @@ model VoiceSession {
   startedAt       DateTime @default(now())
   endedAt         DateTime?
 
-  user         User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user          User              @relation(fields: [userId], references: [id], onDelete: Cascade)
   conversations Conversation[]
+  interactions  InteractionHistory[]
+  visualAnalyses VisualAnalysis[]
+  metrics       AccessibilityMetric[]
 
   @@index([userId])
   @@index([status])
@@ -107,9 +113,11 @@ model InteractionHistory {
   metadata        String   @default("{}")
   createdAt       DateTime @default(now())
 
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session VoiceSession? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
 
   @@index([userId])
+  @@index([sessionId])
   @@index([type])
   @@index([createdAt])
 }
@@ -122,8 +130,11 @@ model VisualAnalysis {
   description   String
   confidence    Float
   boundingBox   String   @default("{}")
- accessibilityAttributes String @default("{}")
+  accessibilityAttributes String @default("{}")
   createdAt     DateTime @default(now())
+
+  user    User?          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session VoiceSession?  @relation(fields: [sessionId], references: [id], onDelete: SetNull)
 
   @@index([userId])
   @@index([sessionId])
@@ -140,6 +151,25 @@ model AccessibilityMetric {
   cognitiveLoadScore Float?
   recordedAt      DateTime @default(now())
 
+  session VoiceSession? @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
   @@index([sessionId])
   @@index([recordedAt])
+}
+
+/// Security audit trail. Written fire-and-forget by lib/security.ts audit();
+/// read by /api/auth/audit (admin). Retention is pruned opportunistically.
+model AuditEvent {
+  id        String   @id @default(cuid())
+  ts        DateTime @default(now())
+  action    String
+  detail    String   @default("")
+  userId    String?
+  ip        String   @default("0.0.0.0")
+  ua        String   @default("")
+  ok        Boolean  @default(true)
+
+  @@index([ts])
+  @@index([action])
+  @@index([userId])
 }

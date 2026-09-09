@@ -56,7 +56,7 @@ export function MetricsPanel() {
     <div className="flex flex-col h-full">
       <div className="px-4 py-3 border-b border-white/5">
         <h2 className="text-sm font-medium text-white/80">Accessibility Metrics</h2>
-        <p className="text-[10px] text-[#6C757D] mt-0.5">Real-time session performance</p>
+        <p className="text-[10px] text-[#8B98A8] mt-0.5">Real-time session performance</p>
       </div>
 
       <div className="flex-1 overflow-y-auto vb-scrollbar p-4">
@@ -81,7 +81,7 @@ export function MetricsPanel() {
                   )}
                 </div>
                 <p className={cn('text-lg font-semibold', card.color)}>{card.value}</p>
-                <p className="text-[10px] text-[#6C757D]">{card.label}</p>
+                <p className="text-[10px] text-[#8B98A8]">{card.label}</p>
               </div>
             )
           })}
@@ -107,7 +107,7 @@ export function MetricsPanel() {
               aria-label={`Cognitive load indicator at ${metrics.errorRate}%`}
             />
           </div>
-          <p className="text-[10px] text-[#6C757D] mt-2">
+          <p className="text-[10px] text-[#8B98A8] mt-2">
             {metrics.errorRate <= 15
               ? 'Low cognitive load. Interactions are smooth and efficient.'
               : metrics.errorRate <= 30
@@ -127,7 +127,7 @@ export function MetricsPanel() {
               {metrics.taskCompletionRate >= 80 ? 'High' : metrics.taskCompletionRate >= 50 ? 'Medium' : 'Developing'}
             </span>
           </div>
-          <p className="text-[10px] text-[#6C757D]">
+          <p className="text-[10px] text-[#8B98A8]">
             {metrics.taskCompletionRate >= 80
               ? 'You are navigating independently with high success. Minimal assistance needed.'
               : metrics.taskCompletionRate >= 50

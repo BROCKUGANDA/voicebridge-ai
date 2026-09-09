@@ -89,20 +89,13 @@ export function trapFocus(container: HTMLElement): () => void {
  */
 export function getKeyboardShortcuts(): Array<{ keys: string; description: string; action: string }> {
   return [
-    { keys: 'Space', description: 'Toggle microphone', action: 'toggle-mic' },
-    { keys: 'Escape', description: 'Stop current action', action: 'cancel' },
+    { keys: 'Alt + 1–7', description: 'Switch dashboard panels (Home, Conversation, Visual, Metrics, Sound, Accessibility, Shortcuts)', action: 'nav-panel' },
+    { keys: 'Escape', description: 'Stop speaking / close drawer', action: 'cancel' },
     { keys: 'Ctrl + /', description: 'Open help', action: 'help' },
     { keys: 'Ctrl + ,', description: 'Open settings', action: 'settings' },
     { keys: 'Ctrl + D', description: 'Describe current page', action: 'describe-page' },
-    { keys: 'Ctrl + R', description: 'Read page content', action: 'read-page' },
-    { keys: 'H', description: 'Go to next heading', action: 'next-heading' },
-    { keys: 'Shift + H', description: 'Go to previous heading', action: 'prev-heading' },
-    { keys: 'L', description: 'Go to next link', action: 'next-link' },
-    { keys: 'Shift + L', description: 'Go to previous link', action: 'prev-link' },
-    { keys: 'F', description: 'Go to next form field', action: 'next-field' },
-    { keys: 'Shift + F', description: 'Go to previous form field', action: 'prev-field' },
-    { keys: 'Enter', description: 'Activate current element', action: 'activate' },
-    { keys: 'Tab', description: 'Move to next element', action: 'next-element' },
+    { keys: 'Tab', description: 'Move to next element (browser default)', action: 'next-element' },
+    { keys: 'Shift + Tab', description: 'Move to previous element (browser default)', action: 'prev-element' },
   ]
 }
 

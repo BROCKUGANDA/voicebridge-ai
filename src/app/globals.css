@@ -50,7 +50,8 @@
   --color-vb-amber: #FFB627;
   --color-vb-red: #FF6B6B;
   --color-vb-green: #51CF66;
-  --color-vb-slate: #6C757D;
+  /* WCAG AA: #8B98A8 gives ≥5.2:1 on #0A0E17 (the old #6C757D was ~4.0:1). */
+  --color-vb-slate: #8B98A8;
   --color-vb-cyan-dim: rgba(0, 240, 255, 0.15);
   --color-vb-teal-dim: rgba(92, 224, 216, 0.1);
   --color-vb-glow: 0 0 20px rgba(0, 240, 255, 0.3);
@@ -69,7 +70,7 @@
   --secondary: #1F2937;
   --secondary-foreground: #FFFFFF;
   --muted: #1F2937;
-  --muted-foreground: #6C757D;
+  --muted-foreground: #8B98A8;
   --accent: rgba(0, 240, 255, 0.15);
   --accent-foreground: #00F0FF;
   --destructive: #FF6B6B;

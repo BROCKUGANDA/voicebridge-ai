@@ -1,0 +1,3 @@
+file 'C:/Users/HP/Desktop/voicebrigdeai/download/demo-audio/01-hook.mp3'
+file 'C:/Users/HP/Desktop/voicebrigdeai/download/demo-audio/02-problem.mp3'
+file 'C:/Users/HP/Desktop/voicebrigdeai/download/demo-audio/03-solution.mp3'

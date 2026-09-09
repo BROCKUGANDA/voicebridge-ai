@@ -13,6 +13,12 @@ node_modules
 # testing
 /coverage
 
+# database — local SQLite state, never source-controlled
+db/*.db
+db/*.db-journal
+*.sqlite
+*.sqlite3
+
 # next.js
 /.next/
 /out/
@@ -52,3 +58,6 @@ prompt
 server.log
 # Skills directory
 /skills/
+# large binary model (download separately)
+public/models/
+

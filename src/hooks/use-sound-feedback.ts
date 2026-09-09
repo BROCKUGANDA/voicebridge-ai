@@ -35,7 +35,9 @@ const VALID_SOUNDS = new Set([
 ])
 
 export function useSoundFeedback(): UseSoundFeedbackReturn {
-  const { soundTheme, soundVolume, hapticFeedback: hapticOn } = useSettingsStore()
+  const soundTheme = useSettingsStore((s) => s.soundTheme)
+  const soundVolume = useSettingsStore((s) => s.soundVolume)
+  const hapticOn = useSettingsStore((s) => s.hapticFeedback)
 
   const playSound = useCallback(
     (type: string) => {

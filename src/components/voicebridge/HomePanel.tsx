@@ -1,5 +1,6 @@
 'use client'
 
+import { useVoiceStore } from '@/stores/voice-store'
 import { useState, useEffect } from 'react'
 import {
   Sparkles,
@@ -16,17 +17,19 @@ import { Badge } from '@/components/ui/badge'
 import { VoiceBridgeLogo } from './VoiceBridgeLogo'
 
 export function HomePanel() {
-  const [speechSupported, setSpeechSupported] = useState<boolean | null>(() => {
-    if (typeof window === 'undefined') return null
-    return 'SpeechRecognition' in window || 'webkitSpeechRecognition' in window
-  })
-  const [voiceCount, setVoiceCount] = useState(() => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return 0
-    return window.speechSynthesis.getVoices().length
-  })
+  // Start with SSR-safe defaults; read browser APIs after mount.
+  const [speechSupported, setSpeechSupported] = useState<boolean | null>(null)
+  const [voiceCount, setVoiceCount] = useState(0)
+  // Real cloud-agent liveness — not a hardcoded "Online".
+  const isWebSocketConnected = useVoiceStore((s) => s.isWebSocketConnected)
+  const voiceState = useVoiceStore((s) => s.voiceState)
 
   useEffect(() => {
-    if (typeof window === 'undefined' || !window.speechSynthesis) return
+    setSpeechSupported(
+      'SpeechRecognition' in window || 'webkitSpeechRecognition' in window,
+    )
+    if (!window.speechSynthesis) return
+    setVoiceCount(window.speechSynthesis.getVoices().length)
     const handleVoicesChanged = () => {
       setVoiceCount(window.speechSynthesis.getVoices().length)
     }
@@ -77,7 +80,7 @@ export function HomePanel() {
       <ScrollArea className="flex-1 vb-scrollbar">
         <div className="p-4 space-y-5">
           {/* Description */}
-          <p className="text-xs text-[#6C757D] leading-relaxed">
+          <p className="text-xs text-[#8B98A8] leading-relaxed">
             VoiceBridge AI is your accessible voice-powered assistant. Interact with any
             web page using natural speech, get real-time visual descriptions, and navigate
             with full keyboard and screen-reader support.
@@ -134,12 +137,12 @@ export function HomePanel() {
             <div className="vb-glass rounded-lg p-3 space-y-2.5">
               {/* Speech API support */}
               <div className="flex items-center justify-between">
-                <span className="text-xs text-[#6C757D]">Speech API</span>
+                <span className="text-xs text-[#8B98A8]">Speech API</span>
                 <div className="flex items-center gap-1.5">
                   {speechSupported === null ? (
                     <Badge
                       variant="outline"
-                      className="text-[10px] px-1.5 py-0 border-white/10 text-[#6C757D]"
+                      className="text-[10px] px-1.5 py-0 border-white/10 text-[#8B98A8]"
                     >
                       Checking…
                     </Badge>
@@ -157,20 +160,34 @@ export function HomePanel() {
                 </div>
               </div>
 
-              {/* Voice Service — always online via browser APIs */}
+              {/* Cloud agent status — honest, driven by the live WS state. */}
               <div className="flex items-center justify-between">
-                <span className="text-xs text-[#6C757D]">Voice Service</span>
+                <span className="text-xs text-[#8B98A8]">AssemblyAI Agent</span>
                 <div className="flex items-center gap-1.5">
-                  <Badge className="text-[10px] px-1.5 py-0 bg-[#51CF66]/15 text-[#51CF66] border-[#51CF66]/20 hover:bg-[#51CF66]/20">
-                    <CheckCircle2 className="w-3 h-3 mr-1" aria-hidden="true" />
-                    Online
-                  </Badge>
+                  {isWebSocketConnected ? (
+                    <Badge className="text-[10px] px-1.5 py-0 bg-[#51CF66]/15 text-[#51CF66] border-[#51CF66]/20 hover:bg-[#51CF66]/20">
+                      <CheckCircle2 className="w-3 h-3 mr-1" aria-hidden="true" />
+                      Live session
+                    </Badge>
+                  ) : voiceState === 'error' ? (
+                    <Badge className="text-[10px] px-1.5 py-0 bg-[#FF6B6B]/15 text-[#FF6B6B] border-[#FF6B6B]/20 hover:bg-[#FF6B6B]/20">
+                      <XCircle className="w-3 h-3 mr-1" aria-hidden="true" />
+                      Offline
+                    </Badge>
+                  ) : (
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] px-1.5 py-0 border-white/10 text-[#8B98A8]"
+                    >
+                      Idle — tap power to connect
+                    </Badge>
+                  )}
                 </div>
               </div>
 
               {/* Voice count */}
               <div className="flex items-center justify-between">
-                <span className="text-xs text-[#6C757D]">Available Voices</span>
+                <span className="text-xs text-[#8B98A8]">Available Voices</span>
                 <span className="text-xs text-[#00F0FF] font-mono">
                   {voiceCount} {voiceCount === 1 ? 'voice' : 'voices'}
                 </span>
@@ -194,7 +211,7 @@ export function HomePanel() {
               {tips.map((tip, i) => (
                 <p
                   key={i}
-                  className="text-xs text-[#6C757D] leading-relaxed flex items-start gap-2"
+                  className="text-xs text-[#8B98A8] leading-relaxed flex items-start gap-2"
                 >
                   <span className="text-[#FFB627] mt-px shrink-0" aria-hidden="true">•</span>
                   {tip}

@@ -60,7 +60,10 @@ export const useVoiceStore = create<VoiceStore>((set) => ({
   currentTranscript: '',
   messages: [],
   visualData: null,
-  isWebSocketConnected: true,
+  // The old socket.io backend is gone; the AssemblyAI WS drives voice
+  // state directly. Start honest (disconnected) — nothing flips this true
+  // today, so the header icon shouldn't claim a live socket we don't have.
+  isWebSocketConnected: false,
   audioLevel: 0,
   currentResponse: '',
   processingStartTime: null,

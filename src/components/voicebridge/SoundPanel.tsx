@@ -146,7 +146,7 @@ export function SoundPanel() {
                       <Icon
                         className={
                           'w-3.5 h-3.5 ' +
-                          (isActive ? 'text-[#00F0FF]' : 'text-[#6C757D]')
+                          (isActive ? 'text-[#00F0FF]' : 'text-[#8B98A8]')
                         }
                         aria-hidden="true"
                       />
@@ -159,7 +159,7 @@ export function SoundPanel() {
                         {label}
                       </span>
                     </div>
-                    <p className="text-[10px] text-[#6C757D] leading-relaxed">
+                    <p className="text-[10px] text-[#8B98A8] leading-relaxed">
                       {description}
                     </p>
                   </button>
@@ -243,7 +243,7 @@ export function SoundPanel() {
                 >
                   Spatial Audio
                 </h3>
-                <p className="text-[10px] text-[#6C757D]">
+                <p className="text-[10px] text-[#8B98A8]">
                   Place sounds in 3D space around you
                 </p>
               </div>
@@ -270,7 +270,7 @@ export function SoundPanel() {
                 >
                   Haptic Feedback
                 </h3>
-                <p className="text-[10px] text-[#6C757D]">
+                <p className="text-[10px] text-[#8B98A8]">
                   {hapticFeedback
                     ? 'Vibration patterns active on supported devices'
                     : 'Haptic feedback is disabled'}
@@ -289,7 +289,7 @@ export function SoundPanel() {
 
           {/* Info note */}
           <div className="vb-glass rounded-lg p-3">
-            <p className="text-[10px] text-[#6C757D] leading-relaxed">
+            <p className="text-[10px] text-[#8B98A8] leading-relaxed">
               <span className="text-[#5CE0D8] font-medium">Note:</span> All sounds
               are generated programmatically using the Web Audio API — no external audio
               files are loaded. Haptic feedback requires a device with vibration support.

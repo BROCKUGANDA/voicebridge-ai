@@ -154,7 +154,7 @@ export const soundEngine = {
 
   getAudioLevel(
     analyser: AnalyserNode,
-    dataArray: Uint8Array
+    dataArray: Uint8Array<ArrayBuffer>
   ): number {
     analyser.getByteTimeDomainData(dataArray)
     let sum = 0

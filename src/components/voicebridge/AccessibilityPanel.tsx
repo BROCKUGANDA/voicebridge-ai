@@ -140,7 +140,7 @@ export function AccessibilityPanel() {
       case 'concise':
         return 'bg-[#FFB627]/20 text-[#FFB627] border-[#FFB627]/30'
       default:
-        return 'bg-white/5 text-[#6C757D] border-white/10'
+        return 'bg-white/5 text-[#8B98A8] border-white/10'
     }
   }, [store.responseVerbosity])
 
@@ -160,7 +160,7 @@ export function AccessibilityPanel() {
         </div>
         <div>
           <h2 className="text-sm font-medium text-white/90">Accessibility</h2>
-          <p className="text-[10px] text-[#6C757D]">Customize your experience</p>
+          <p className="text-[10px] text-[#8B98A8]">Customize your experience</p>
         </div>
       </header>
 
@@ -178,7 +178,7 @@ export function AccessibilityPanel() {
             <div className="vb-glass rounded-lg p-3 space-y-4">
               {/* Font Size */}
               <div className="space-y-2">
-                <Label className="text-xs text-[#6C757D]" htmlFor="font-size-select">
+                <Label className="text-xs text-[#8B98A8]" htmlFor="font-size-select">
                   Font Size
                 </Label>
                 <Select
@@ -207,7 +207,7 @@ export function AccessibilityPanel() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="text-xs text-white/80">High Contrast Mode</Label>
-                  <p className="text-[10px] text-[#6C757D]">Increases contrast for better visibility</p>
+                  <p className="text-[10px] text-[#8B98A8]">Increases contrast for better visibility</p>
                 </div>
                 <Switch
                   checked={store.highContrast}
@@ -222,7 +222,7 @@ export function AccessibilityPanel() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="text-xs text-white/80">Reduced Motion</Label>
-                  <p className="text-[10px] text-[#6C757D]">Minimizes animations and transitions</p>
+                  <p className="text-[10px] text-[#8B98A8]">Minimizes animations and transitions</p>
                 </div>
                 <Switch
                   checked={store.reducedMotion}
@@ -237,7 +237,7 @@ export function AccessibilityPanel() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="text-xs text-white/80">Auto-Describe Images</Label>
-                  <p className="text-[10px] text-[#6C757D]">Automatically describe images on page load</p>
+                  <p className="text-[10px] text-[#8B98A8]">Automatically describe images on page load</p>
                 </div>
                 <Switch
                   checked={store.autoDescribe}
@@ -262,7 +262,7 @@ export function AccessibilityPanel() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="text-xs text-white/80">Haptic Feedback</Label>
-                  <p className="text-[10px] text-[#6C757D]">Vibrate on actions (mobile devices)</p>
+                  <p className="text-[10px] text-[#8B98A8]">Vibrate on actions (mobile devices)</p>
                 </div>
                 <Switch
                   checked={store.hapticFeedback}
@@ -277,7 +277,7 @@ export function AccessibilityPanel() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="text-xs text-white/80">Spatial Audio</Label>
-                  <p className="text-[10px] text-[#6C757D]">Place sounds in 3D space around you</p>
+                  <p className="text-[10px] text-[#8B98A8]">Place sounds in 3D space around you</p>
                 </div>
                 <Switch
                   checked={store.spatialAudio}
@@ -292,7 +292,7 @@ export function AccessibilityPanel() {
               <div className="flex items-center justify-between">
                 <div>
                   <Label className="text-xs text-white/80">Keyboard Shortcuts</Label>
-                  <p className="text-[10px] text-[#6C757D]">Use keyboard to control VoiceBridge</p>
+                  <p className="text-[10px] text-[#8B98A8]">Use keyboard to control VoiceBridge</p>
                 </div>
                 <Switch
                   checked={store.keyboardShortcuts}
@@ -313,14 +313,14 @@ export function AccessibilityPanel() {
             </div>
 
             <div className="vb-glass rounded-lg p-3 space-y-4">
-              <p className="text-[10px] text-[#6C757D]">
+              <p className="text-[10px] text-[#8B98A8]">
                 Test color combinations for WCAG accessibility compliance.
               </p>
 
               {/* Color inputs */}
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-1.5">
-                  <Label htmlFor="fg-color-input" className="text-[10px] text-[#6C757D]">
+                  <Label htmlFor="fg-color-input" className="text-[10px] text-[#8B98A8]">
                     Foreground
                   </Label>
                   <div className="flex items-center gap-2">
@@ -347,7 +347,7 @@ export function AccessibilityPanel() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label htmlFor="bg-color-input" className="text-[10px] text-[#6C757D]">
+                  <Label htmlFor="bg-color-input" className="text-[10px] text-[#8B98A8]">
                     Background
                   </Label>
                   <div className="flex items-center gap-2">
@@ -387,7 +387,7 @@ export function AccessibilityPanel() {
               {/* Ratio & WCAG badge */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] text-[#6C757D]">Contrast Ratio</span>
+                  <span className="text-[10px] text-[#8B98A8]">Contrast Ratio</span>
                   <span className="text-sm font-bold text-white/90 font-mono">
                     {ratio > 0 ? ratio.toFixed(2) : '—'}:1
                   </span>
@@ -447,7 +447,7 @@ export function AccessibilityPanel() {
                   role="status"
                   aria-label={`Speech rate: ${store.voiceSpeed.toFixed(1)}x`}
                 >
-                  <p className="text-[10px] text-[#6C757D] mb-0.5">Rate</p>
+                  <p className="text-[10px] text-[#8B98A8] mb-0.5">Rate</p>
                   <p className="text-sm font-bold text-[#00F0FF] font-mono">
                     {store.voiceSpeed.toFixed(1)}x
                   </p>
@@ -459,7 +459,7 @@ export function AccessibilityPanel() {
                   role="status"
                   aria-label={`Pitch: ${store.voicePitch.toFixed(1)}`}
                 >
-                  <p className="text-[10px] text-[#6C757D] mb-0.5">Pitch</p>
+                  <p className="text-[10px] text-[#8B98A8] mb-0.5">Pitch</p>
                   <p className="text-sm font-bold text-[#5CE0D8] font-mono">
                     {store.voicePitch.toFixed(1)}
                   </p>
@@ -471,7 +471,7 @@ export function AccessibilityPanel() {
                   role="status"
                   aria-label={`Volume: ${Math.round(store.voiceVolume * 100)}%`}
                 >
-                  <p className="text-[10px] text-[#6C757D] mb-0.5">Volume</p>
+                  <p className="text-[10px] text-[#8B98A8] mb-0.5">Volume</p>
                   <p className="text-sm font-bold text-[#FFB627] font-mono">
                     {Math.round(store.voiceVolume * 100)}%
                   </p>
@@ -480,7 +480,7 @@ export function AccessibilityPanel() {
 
               {/* Response Verbosity */}
               <div className="flex items-center justify-between">
-                <span className="text-[10px] text-[#6C757D]">Response Verbosity</span>
+                <span className="text-[10px] text-[#8B98A8]">Response Verbosity</span>
                 <Badge
                   className={cn('text-[10px] font-semibold border px-2 py-0', verbosityBadgeVariant)}
                   aria-label={`Response verbosity: ${store.responseVerbosity}`}

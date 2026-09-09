@@ -9,7 +9,7 @@ export function KeyboardShortcutsPanel() {
     <div className="flex flex-col h-full">
       <div className="px-4 py-3 border-b border-white/5">
         <h2 className="text-sm font-medium text-white/80">Keyboard Shortcuts</h2>
-        <p className="text-[10px] text-[#6C757D] mt-0.5">
+        <p className="text-[10px] text-[#8B98A8] mt-0.5">
           Navigate VoiceBridge without a mouse
         </p>
       </div>
@@ -22,7 +22,7 @@ export function KeyboardShortcutsPanel() {
               className="flex items-center justify-between py-2 px-3 rounded-lg hover:bg-white/3 transition-colors"
             >
               <span className="text-xs text-white/70">{description}</span>
-              <kbd className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-[11px] text-[#6C757D] font-mono whitespace-nowrap">
+              <kbd className="px-2.5 py-1 rounded-md bg-white/5 border border-white/10 text-[11px] text-[#8B98A8] font-mono whitespace-nowrap">
                 {keys}
               </kbd>
             </div>
