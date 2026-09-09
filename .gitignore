@@ -61,3 +61,10 @@ server.log
 # large binary model (download separately)
 public/models/
 
+
+download/demo-work/
+download/*.png
+local-env
+.env
+.env.local
+.env.*.local

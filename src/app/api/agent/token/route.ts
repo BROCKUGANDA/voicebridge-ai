@@ -43,9 +43,10 @@ async function handler(req: NextRequest) {
 
   const url = new URL(AGENT_TOKEN_URL)
   url.searchParams.set('expires_in_seconds', '300')
-  // 3 hours is the documented max (10800 s) and the worst-case billing
-  // exposure if the user forgets to end the session.
-  url.searchParams.set('max_session_duration_seconds', '10800')
+  // Public-demo posture: cap sessions at 30 minutes (not the 3 h max) so
+  // abandoned tabs stop billing. The client already sends session.end on
+  // power-off and pagehide.
+  url.searchParams.set('max_session_duration_seconds', '1800')
 
   let upstream: Response
   try {
