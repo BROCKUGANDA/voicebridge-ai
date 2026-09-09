@@ -1,157 +1,161 @@
 /**
- * Assemble narrated demo video from frame PNGs + TTS mp3s.
- *
- * Beat map (seconds of hold after audio ends, minimum total frame time):
- *   01 login          2s
- *   02 login-filled   1.5s
- *   03 home-ready     2s
- *   04 power-on       2s
- *   05 metrics        2.5s
- *   06 settings       2s
- *   07 engine-tab     2s
- *   08 conversation   2s
- *   09 a11y           1.5s
- *   10 home-final     3s
- *
- * Audio overlays (may span multiple frames):
- *   01-hook        → frames 01-03
- *   02-problem     → frames 01-03 (continued) / 03
- *   03-solution    → frame 03-04
- *   04-demo-power  → frame 04
- *   05-demo-navigate→ frames 05-07
- *   06-demo-prefs  → frames 06-08
- *   07-demo-fallback→ frames 07-09
- *   08-business    → frames 08-10
- *   09-close       → frame 10
- *
- * Strategy: build a silent video from stills, then mux a single concatenated
- * narration track. Simple, reliable, judge-friendly.
+ * Assemble narrated demo video from frames + TTS audio via ffmpeg.
+ * Usage: node scripts/assemble-demo-video.mjs
  */
-import { execFileSync } from 'node:child_process'
-import { readdirSync, existsSync, mkdirSync, writeFileSync, statSync } from 'node:fs'
+import { readFileSync, existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
+import { execFileSync } from 'node:child_process'
 
-const ROOT = process.cwd()
-const FRAMES = join(ROOT, 'download', 'demo-frames')
-const AUDIO = join(ROOT, 'download', 'demo-audio')
-const OUTDIR = join(ROOT, 'download', 'demo-video')
-mkdirSync(OUTDIR, { recursive: true })
+const root = process.cwd()
+const framesDir = join(root, 'download', 'demo-frames')
+const audioDir = join(root, 'download', 'demo-audio')
+const outDir = join(root, 'download')
+const workDir = join(outDir, 'demo-work')
+mkdirSync(workDir, { recursive: true })
 
-const frameFiles = readdirSync(FRAMES)
-  .filter((f) => f.endsWith('.png'))
-  .sort()
-if (frameFiles.length === 0) {
-  console.error('No frames in', FRAMES)
-  process.exit(1)
+const timeline = JSON.parse(readFileSync(join(framesDir, 'timeline.json'), 'utf8'))
+
+// Map frame name → narration file stem
+const NARRATION_MAP = {
+  login: 'n01-login',
+  home: 'n02-home',
+  'engine-live': 'n03-engine',
+  metrics: 'n04-metrics',
+  describe: 'n05-describe',
+  'settings-engine': 'n06-engine',
+  'settings-voice': 'n07-voice',
+  help: 'n08-help',
+  transcript: 'n09-transcript',
+  'metrics-panel': 'n10-metrics',
+  outro: 'n11-outro',
 }
 
-// Hold times per frame (seconds) — tuned to ~match narration pacing.
-const holds = [2.5, 1.5, 2.5, 2.5, 3.0, 2.5, 2.5, 2.5, 2.0, 3.5]
-
-function ff(args, label) {
-  console.log('ffmpeg', label)
-  execFileSync('ffmpeg', args, { stdio: ['ignore', 'pipe', 'pipe'] })
+function ffmpeg(args, opts = {}) {
+  execFileSync('ffmpeg', args, { stdio: ['ignore', 'pipe', 'pipe'], ...opts })
 }
 
-// 1. Normalize each still to 1280x720 mp4 clip
-const clips = []
-frameFiles.forEach((file, i) => {
-  const src = join(FRAMES, file)
-  const dest = join(OUTDIR, `clip-${String(i + 1).padStart(2, '0')}.mp4`)
-  const t = holds[i] ?? 2.5
-  ff(
-    [
-      '-y',
-      '-loop', '1',
-      '-i', src,
-      '-t', String(t),
-      '-vf', 'scale=1280:720:force_original_aspect_ratio=decrease,pad=1280:720:(ow-iw)/2:(oh-ih)/2,fps=30',
-      '-c:v', 'libx264',
-      '-pix_fmt', 'yuv420p',
-      '-an',
-      dest,
-    ],
-    `clip ${i + 1}`,
+// Copy a system font next to the workdir so drawtext can use a relative path
+// (Windows path escaping + missing fontconfig is fragile).
+import { copyFileSync } from 'node:fs'
+const fontSrc = 'C:\\Windows\\Fonts\\arial.ttf'
+const fontLocal = join(workDir, 'arial.ttf')
+if (existsSync(fontSrc)) {
+  try {
+    copyFileSync(fontSrc, fontLocal)
+  } catch {
+    /* already there */
+  }
+}
+
+function audioDurationSec(file) {
+  try {
+    const out = execFileSync(
+      'ffprobe',
+      ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=noprint_wrappers=1:nokey=1', file],
+      { encoding: 'utf8' },
+    )
+    return parseFloat(out.trim())
+  } catch {
+    return 0
+  }
+}
+
+function findAudio(stem) {
+  for (const ext of ['.mp3', '.wav', '.m4a']) {
+    const p = join(audioDir, stem + ext)
+    if (existsSync(p)) return p
+  }
+  return null
+}
+
+const segments = []
+for (const frame of timeline.frames) {
+  const stem = NARRATION_MAP[frame.name]
+  const audio = stem ? findAudio(stem) : null
+  let duration = (frame.holdMs || 2500) / 1000
+  if (audio) {
+    const d = audioDurationSec(audio)
+    if (d > 0.4) duration = Math.max(d + 0.45, 1.8) // pad slightly
+  }
+  segments.push({ frame, audio, duration })
+}
+
+console.log(`Segments: ${segments.length}`)
+segments.forEach((s, i) => {
+  console.log(`  ${i + 1}. ${s.frame.name}  ${s.duration.toFixed(2)}s  audio=${s.audio ? 'yes' : 'NO (silence)'}`
   )
-  clips.push(dest)
 })
 
-// 2. Concat clips
-const listFile = join(OUTDIR, 'clips.txt')
-writeFileSync(listFile, clips.map((c) => `file '${c.replace(/\\/g, '/')}'`).join('\n'))
-const silent = join(OUTDIR, 'silent.mp4')
-ff(['-y', '-f', 'concat', '-safe', '0', '-i', listFile, '-c', 'copy', silent], 'concat')
-
-// 3. Concat narration audio if present
-const audioOrder = [
-  '01-hook.mp3',
-  '02-problem.mp3',
-  '03-solution.mp3',
-  '04-demo-power.mp3',
-  '05-demo-navigate.mp3',
-  '06-demo-prefs.mp3',
-  '07-demo-fallback.mp3',
-  '08-business.mp3',
-  '09-close.mp3',
-]
-const present = audioOrder
-  .map((n) => join(AUDIO, n))
-  .filter((p) => existsSync(p) && statSync(p).size > 1000)
-
-let narration = null
-if (present.length > 0) {
-  const aList = join(OUTDIR, 'audio.txt')
-  writeFileSync(aList, present.map((p) => `file '${p.replace(/\\/g, '/')}'`).join('\n'))
-  narration = join(OUTDIR, 'narration.mp3')
-  // Re-encode to consistent format then concat
-  const norm = []
-  present.forEach((p, i) => {
-    const o = join(OUTDIR, `a-${i}.wav`)
-    ff(['-y', '-i', p, '-ar', '44100', '-ac', '2', o], `norm audio ${i}`)
-    norm.push(o)
-  })
-  writeFileSync(
-    join(OUTDIR, 'audio-norm.txt'),
-    norm.map((p) => `file '${p.replace(/\\/g, '/')}'`).join('\n'),
-  )
-  ff(
-    [
+// Build per-segment clips: image + optional audio → video, with burned captions
+const clipPaths = []
+for (let i = 0; i < segments.length; i++) {
+  const seg = segments[i]
+  const clip = join(workDir, `clip-${String(i + 1).padStart(2, '0')}.mp4`)
+  const dur = seg.duration.toFixed(3)
+  // Caption strip at the bottom. Use a local relative fontfile (no drive colon).
+  const cap = (seg.frame.caption || '')
+    .replace(/[\\':,]/g, ' ')
+    .replace(/—/g, '-')
+  const vf = `scale=1440:900,fps=30,drawtext=fontfile=arial.ttf:text='${cap}':fontcolor=white:fontsize=26:x=48:y=820:box=1:boxcolor=0x0A0E17@0.75:boxborderw=16`
+  if (seg.audio) {
+    ffmpeg([
       '-y',
-      '-f', 'concat',
-      '-safe', '0',
-      '-i', join(OUTDIR, 'audio-norm.txt'),
-      '-c:a', 'libmp3lame',
-      '-b:a', '160k',
-      narration,
-    ],
-    'concat audio',
-  )
-} else {
-  console.warn('No narration audio found — silent video only')
-}
-
-// 4. Mux
-const final = join(ROOT, 'download', 'VoiceBridge-AI-Demo.mp4')
-if (narration) {
-  ff(
-    [
-      '-y',
-      '-i', silent,
-      '-i', narration,
-      '-map', '0:v:0',
-      '-map', '1:a:0',
-      '-c:v', 'copy',
+      '-loop', '1',
+      '-i', seg.frame.file,
+      '-i', seg.audio,
+      '-c:v', 'libx264',
+      '-tune', 'stillimage',
       '-c:a', 'aac',
-      '-b:a', '160k',
+      '-b:a', '192k',
+      '-pix_fmt', 'yuv420p',
+      '-vf', vf,
+      '-t', dur,
       '-shortest',
-      '-movflags', '+faststart',
-      final,
-    ],
-    'mux',
-  )
-} else {
-  ff(['-y', '-i', silent, '-c:v', 'copy', '-movflags', '+faststart', final], 'copy silent')
+      clip,
+    ], { cwd: workDir })
+  } else {
+    ffmpeg([
+      '-y',
+      '-f', 'lavfi',
+      '-i', 'anullsrc=r=44100:cl=stereo',
+      '-loop', '1',
+      '-i', seg.frame.file,
+      '-c:v', 'libx264',
+      '-tune', 'stillimage',
+      '-c:a', 'aac',
+      '-b:a', '128k',
+      '-pix_fmt', 'yuv420p',
+      '-vf', vf,
+      '-t', dur,
+      '-shortest',
+      clip,
+    ], { cwd: workDir })
+  }
+  clipPaths.push(clip)
+  console.log(`clip ${i + 1}/${segments.length}`)
 }
 
-console.log('WROTE', final)
-console.log('FRAMES', frameFiles.length, 'AUDIO_CLIPS', present.length)
+// Concat
+const listFile = join(workDir, 'concat.txt')
+writeFileSync(
+  listFile,
+  clipPaths.map((p) => `file '${p.replace(/\\/g, '/')}'`).join('\n') + '\n',
+)
+
+const outVideo = join(outDir, 'VoiceBridge-AI-Demo.mp4')
+ffmpeg([
+  '-y',
+  '-f', 'concat',
+  '-safe', '0',
+  '-i', listFile,
+  '-c:v', 'libx264',
+  '-c:a', 'aac',
+  '-b:a', '192k',
+  '-movflags', '+faststart',
+  '-pix_fmt', 'yuv420p',
+  outVideo,
+])
+
+const total = segments.reduce((a, s) => a + s.duration, 0)
+console.log(`\nWrote ${outVideo}`)
+console.log(`Duration ≈ ${total.toFixed(1)}s`)

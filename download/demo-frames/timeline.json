@@ -1,0 +1,83 @@
+{
+  "base": "http://localhost:3000",
+  "frames": [
+    {
+      "index": 1,
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\f001-login.png",
+      "caption": "Sign in — passphrase-gated dashboard",
+      "holdMs": 2000,
+      "name": "login"
+    },
+    {
+      "index": 2,
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\f002-home.png",
+      "caption": "Home — voice agent controls and quick actions",
+      "holdMs": 2500,
+      "name": "home"
+    },
+    {
+      "index": 3,
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\f003-engine-live.png",
+      "caption": "Engine status — AssemblyAI Voice Agent session",
+      "holdMs": 2800,
+      "name": "engine-live"
+    },
+    {
+      "index": 4,
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\f004-metrics.png",
+      "caption": "Voice intent: \"open metrics\" navigates the dashboard",
+      "holdMs": 2600,
+      "name": "metrics"
+    },
+    {
+      "index": 5,
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\f005-describe.png",
+      "caption": "Visual context — page description spoken to the user",
+      "holdMs": 2600,
+      "name": "describe"
+    },
+    {
+      "index": 6,
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\f006-settings-engine.png",
+      "caption": "Engine ladder — AssemblyAI → Vosk → Web Speech → text",
+      "holdMs": 2800,
+      "name": "settings-engine"
+    },
+    {
+      "index": 7,
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\f007-settings-voice.png",
+      "caption": "Preferences — agent can write these via dispatch_tool",
+      "holdMs": 2400,
+      "name": "settings-voice"
+    },
+    {
+      "index": 8,
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\f008-help.png",
+      "caption": "Help — practical commands for accessibility users",
+      "holdMs": 2600,
+      "name": "help"
+    },
+    {
+      "index": 9,
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\f009-transcript.png",
+      "caption": "Conversation log — exportable transcript",
+      "holdMs": 2400,
+      "name": "transcript"
+    },
+    {
+      "index": 10,
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\f010-metrics-panel.png",
+      "caption": "Session metrics — task completion and error rate",
+      "holdMs": 2400,
+      "name": "metrics-panel"
+    },
+    {
+      "index": 11,
+      "file": "C:\\Users\\HP\\Desktop\\voicebrigdeai\\download\\demo-frames\\f011-outro.png",
+      "caption": "VoiceBridge AI — accessibility first, AssemblyAI powered",
+      "holdMs": 3000,
+      "name": "outro"
+    }
+  ],
+  "capturedAt": "2026-09-09T18:13:10.102Z"
+}
