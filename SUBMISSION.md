@@ -144,8 +144,21 @@ Cost note: AssemblyAI Voice Agent usage is metered per session minute — fallba
 
 ## Links to include in the submission
 
-- Repo: *(your GitHub URL)*  
-- Live demo: *(your deploy URL)*  
-- Video: *(YouTube / lablab upload)*  
-- AssemblyAI Voice Agent docs: https://www.assemblyai.com/docs/voice-agents/overview  
-- Hackathon: https://lablab.ai/ai-hackathons/assemblyai-voice-agent-hackathon  
+- Repo: https://github.com/BROCKUGANDA/voicebridge-ai
+- Live demo: **https://5.22.215.51.sslip.io** (Caddy + Let’s Encrypt on UpCloud `5.22.215.51`)
+  - Passphrase: set in host env `VOICEBRIDGE_AUTH_PASSPHRASE` — share **only** in the lablab submission form for judges (never in the public README).
+  - AssemblyAI key stays server-side; browser gets single-use WS tokens only.
+- Video: `download/VoiceBridge-AI-Demo.mp4` (or upload to YouTube / lablab)
+- Pitch: `download/VoiceBridge-AI-Pitch.pdf` + `.pptx`
+- AssemblyAI Voice Agent docs: https://www.assemblyai.com/docs/voice-agents/overview
+- Hackathon: https://lablab.ai/ai-hackathons/assemblyai-voice-agent-hackathon
+
+### Platform notes
+
+| Item | Value |
+|---|---|
+| Host | UpCloud Ubuntu `5.22.215.51` |
+| SSH | `ssh -i ~/.ssh/upcloud_ssh_key root@5.22.215.51` (alias `upcloud-vexp`) |
+| App path | `/opt/voicebridge` · systemd `voicebridge.service` · port `3000` |
+| Edge | Caddy TLS reverse_proxy · site `5.22.215.51.sslip.io` |
+| Optional pretty host | Point DNS `voice.svalley.tech` → `5.22.215.51` (already in Caddyfile) |
