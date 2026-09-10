@@ -96,13 +96,22 @@ This creates a reusable agent on AssemblyAI (prompt, voice `anna`, keyterms, `di
 
 Without this step the client falls back to **inline** `session.update` config — still fully functional.
 
-### 4. Run
+### 4. Run locally
 
 ```bash
 npm run dev
 ```
 
 Open http://localhost:3000 → sign in with your passphrase → **tap the power button** (or press **Space**) → speak.
+
+### 4b. Public demo (hackathon judges)
+
+**https://5.22.215.51.sslip.io**
+
+Hosted on UpCloud (`5.22.215.51`) behind Caddy + Let’s Encrypt.  
+Passphrase is only in host env `VOICEBRIDGE_AUTH_PASSPHRASE` — share it privately with judges, not in the public README.
+
+Optional prettier host: point DNS `voice.svalley.tech` → `5.22.215.51` (site is already in the server Caddyfile).
 
 ### 5. Try these phrases
 
